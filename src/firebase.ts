@@ -1,18 +1,28 @@
-// Firebase initialisation and submission helper.
+// Firebase initialisation and submission helpers.
 //
-// Uses Firebase Realtime Database (RTDB), matching the databaseURL in the
-// project config below. No sign-in required; writes go directly to RTDB
-// using the project's existing rules.
+// Backed by the project's Realtime Database. The web client config below is
+// intentionally checked in. Per Firebase's documentation, web apiKey /
+// projectId / etc. are bundled into every published build and are visible in
+// DevTools regardless. Security is enforced by Realtime Database rules.
+//
+// Two checkpoints write to RTDB:
+//   logProfileStart()  : called when a reviewer submits the profile form.
+//                        Creates an email-keyed in_progress record so the
+//                        coordinator sees who started.
+//   submitToFirestore(): called on final Submit. Updates the same record to
+//                        status=completed with all responses.
+// Both use set() against an email-derived key so resumes overwrite the same
+// node rather than creating duplicates.
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
   getDatabase,
   ref,
-  push,
+  set,
   serverTimestamp,
   type Database,
 } from "firebase/database";
-import type { Session } from "./types";
+import type { ReviewerMeta, Session } from "./types";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIorDH--HXJolxqx0NdF8MWO0wmO0_a4A",
@@ -40,17 +50,60 @@ function ensure(): Database {
   return db!;
 }
 
+/** Stable, short, RTDB-safe key derived from the reviewer's email. djb2 hash
+ *  in base36. Same email always maps to the same key, so resumes update the
+ *  same node instead of creating a duplicate. */
+function emailToKey(email: string): string {
+  let h = 5381;
+  for (let i = 0; i < email.length; i++) {
+    h = ((h << 5) + h) + email.charCodeAt(i);
+  }
+  return "r" + (h >>> 0).toString(36);
+}
+
 export interface SubmissionResult {
   ok: boolean;
   documentId?: string;
   error?: string;
 }
 
-export async function submitToFirestore(session: Session): Promise<SubmissionResult> {
+/** Called from the profile form after the reviewer fills it in. Writes an
+ *  in_progress checkpoint so the coordinator sees who started. */
+export async function logProfileStart(reviewer: ReviewerMeta): Promise<SubmissionResult> {
   try {
     const database = ensure();
-    const refNode = await push(ref(database, RTDB_PATH), {
+    const key = emailToKey(reviewer.email.toLowerCase());
+    const path = `${RTDB_PATH}/${key}`;
+    const payload = {
+      schemaVersion: "1",
+      status: "profile_completed",
+      reviewer,
+      startedAt: reviewer.startedAt,
+      lastUpdate: serverTimestamp(),
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+    };
+    console.log("[firebase] profile checkpoint write to", path);
+    await set(ref(database, path), payload);
+    console.log("[firebase] profile checkpoint OK:", key);
+    return { ok: true, documentId: key };
+  } catch (e) {
+    const err = e instanceof Error ? e.message : String(e);
+    console.error("[firebase] profile checkpoint FAILED:", err);
+    return { ok: false, error: err };
+  }
+}
+
+/** Called on final Submit. Updates the email-keyed record with the full
+ *  session payload and status=completed. */
+export async function submitToFirestore(session: Session): Promise<SubmissionResult> {
+  try {
+    if (!session.reviewer) return { ok: false, error: "no reviewer in session" };
+    const database = ensure();
+    const key = emailToKey(session.reviewer.email.toLowerCase());
+    const path = `${RTDB_PATH}/${key}`;
+    const payload = {
       schemaVersion: session.schemaVersion,
+      status: "completed",
       reviewer: session.reviewer,
       cardOrder: session.cardOrder,
       responses: session.responses,
@@ -58,9 +111,14 @@ export async function submitToFirestore(session: Session): Promise<SubmissionRes
       submittedAt: serverTimestamp(),
       clientFinishedAt: session.finishedAt ?? new Date().toISOString(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-    });
-    return { ok: true, documentId: refNode.key ?? "(unknown)" };
+    };
+    console.log("[firebase] final submission write to", path);
+    await set(ref(database, path), payload);
+    console.log("[firebase] final submission OK:", key);
+    return { ok: true, documentId: key };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    const err = e instanceof Error ? e.message : String(e);
+    console.error("[firebase] final submission FAILED:", err);
+    return { ok: false, error: err };
   }
 }

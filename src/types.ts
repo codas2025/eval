@@ -66,7 +66,7 @@ export interface RubricItem {
   prompt: string;
   scaleType: "likert5" | "literature5" | "freetext";
   anchors?: { value: number; label: string }[];
-  literatureChoices?: { value: string; label: string }[];
+  literatureChoices?: { value: string; label: string; hint?: string }[];
   justificationRequired?: boolean;
   followUpPrompt?: string;
   followUpRequired?: boolean;

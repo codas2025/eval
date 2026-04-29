@@ -100,7 +100,7 @@ function RubricRow({
       {item.scaleType === "literature5" && (
         <fieldset className="mt-3">
           <legend className="sr-only">Literature support choices</legend>
-          <div className="grid grid-cols-1 gap-1 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
             {item.literatureChoices!.map((c) => {
               const id = `${item.id}-${c.value}`;
               const checked = value === c.value;
@@ -108,7 +108,7 @@ function RubricRow({
                 <label
                   key={c.value}
                   htmlFor={id}
-                  className={`flex cursor-pointer flex-col items-start gap-1 rounded-md border px-3 py-2 transition md:items-center md:text-center ${
+                  className={`flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 transition ${
                     checked
                       ? "border-ink-900 bg-ink-900 text-white"
                       : "border-stone-200 bg-white hover:bg-stone-50"
@@ -118,11 +118,18 @@ function RubricRow({
                     id={id}
                     type="radio"
                     name={`q-${item.id}-${index}`}
-                    className="h-4 w-4 accent-current"
+                    className="mt-0.5 h-4 w-4 accent-current"
                     checked={checked}
                     onChange={() => setRating(c.value)}
                   />
-                  <span className="text-[11px] leading-tight">{c.label}</span>
+                  <span className="leading-tight">
+                    <span className="text-xs font-medium">{c.label}</span>
+                    {c.hint && (
+                      <span className={`block text-[10px] ${checked ? "opacity-70" : "text-ink-500"}`}>
+                        {c.hint}
+                      </span>
+                    )}
+                  </span>
                 </label>
               );
             })}

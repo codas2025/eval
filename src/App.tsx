@@ -8,6 +8,7 @@ import { Submit } from "./components/Submit";
 import { useSession } from "./hooks/useSession";
 import { CARDS } from "./data/cards";
 import { COHORTS } from "./data/cohorts";
+import { logProfileStart } from "./firebase";
 
 type Stage = "welcome" | "reviewer" | "cards" | "submit";
 
@@ -76,6 +77,10 @@ export default function App() {
         onBack={() => setStage("welcome")}
         onSubmit={(meta) => {
           startSession(meta);
+          // Fire-and-forget checkpoint so the coordinator can see this
+          // reviewer started. Errors are logged to console but do not block
+          // the reviewer from proceeding.
+          void logProfileStart(meta);
           setStage("cards");
           setActiveCardIdx(0);
         }}
