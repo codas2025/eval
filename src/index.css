@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1 { @apply text-2xl font-semibold tracking-tight; }
+  h2 { @apply text-xl font-semibold tracking-tight; }
+  h3 { @apply text-lg font-semibold tracking-tight; }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-stone-200 bg-white shadow-sm;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition;
+  }
+  .btn-primary {
+    @apply bg-ink-900 text-white hover:bg-ink-700 disabled:bg-ink-300;
+  }
+  .btn-secondary {
+    @apply bg-white text-ink-900 border border-stone-300 hover:bg-stone-100;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink-700;
+  }
+  .input, .select, .textarea {
+    @apply mt-1 block w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm
+           focus:border-ink-700 focus:outline-none focus:ring-1 focus:ring-ink-700;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+  .pill-established { @apply pill bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200; }
+  .pill-supported   { @apply pill bg-amber-50  text-amber-700  ring-1 ring-amber-200; }
+  .pill-emerging    { @apply pill bg-sky-50    text-sky-700    ring-1 ring-sky-200; }
+  .pill-rejected    { @apply pill bg-rose-50   text-rose-700   ring-1 ring-rose-200; }
+}
