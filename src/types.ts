@@ -103,6 +103,11 @@ export interface CardResponse {
   ratings: Record<string, number | string>;
   justifications: Record<string, string>;
   followUps: Record<string, string>;
+  /** True once the reviewer has made ANY explicit change beyond the
+   *  pre-filled defaults (clicked a radio, typed in a textarea). Used to
+   *  distinguish actual annotations from cards still showing pure defaults
+   *  the reviewer never engaged with. */
+  touched?: boolean;
 }
 
 export interface Session {

@@ -9,14 +9,20 @@ export function isCardComplete(session: Session, cardId: string): boolean {
 export function missingForCard(session: Session, cardId: string): string[] {
   const r = session.responses[cardId];
   const out: string[] = [];
+
+  // Cards still showing the pure pre-fill (no explicit interaction yet) do
+  // NOT count as completed even if every required field has a default value.
+  // Surface this as a single explicit message rather than a flood of
+  // per-question rows.
+  if (!r || r.touched !== true) {
+    out.push("You have not yet made any changes on this card. Confirm or adjust at least one rating, justification, or follow-up to register your response.");
+    return out;
+  }
+
   let qN = 0;
   for (const item of RUBRIC) {
     qN += 1;
     if (!item.required) continue;
-    if (!r) {
-      out.push(`Question ${qN} (${item.prompt.slice(0, 40)}…)`);
-      continue;
-    }
     const rating = r.ratings[item.id];
     if (rating === undefined || rating === "") {
       out.push(`Question ${qN}: rating`);

@@ -5,7 +5,7 @@ import { CardView } from "./components/CardView";
 import { RubricForm } from "./components/RubricForm";
 import { ProgressBar, isCardComplete, missingForCard } from "./components/Progress";
 import { Submit } from "./components/Submit";
-import { useSession } from "./hooks/useSession";
+import { useSession, DEFAULT_RATINGS } from "./hooks/useSession";
 import { CARDS } from "./data/cards";
 import { COHORTS } from "./data/cohorts";
 import { logProfileStart, logProgress } from "./firebase";
@@ -116,11 +116,16 @@ export default function App() {
     return <Welcome onStart={() => setStage("reviewer")} resumable={false} />;
   }
 
+  // Pre-filled by useSession.startSession with default ratings + touched=false.
+  // The defaults render the radios with "3" pre-checked, but the card does
+  // not count as completed until the reviewer makes any explicit change
+  // (updateResponse flips touched to true).
   const response = session.responses[activeCard.id] ?? {
     cardId: activeCard.id,
-    ratings: {},
+    ratings: { ...DEFAULT_RATINGS },
     justifications: {},
     followUps: {},
+    touched: false,
   };
   const missing = missingForCard(session, activeCard.id);
   const complete = missing.length === 0;

@@ -67,26 +67,41 @@ export interface SubmissionResult {
   error?: string;
 }
 
+/** Returns only the responses where the reviewer has made an explicit
+ *  change (touched=true). Cards still showing the pure pre-fill default are
+ *  excluded so the cloud record reflects actual annotations only. */
+function touchedResponses(session: Session): Session["responses"] {
+  const out: Session["responses"] = {};
+  for (const [k, v] of Object.entries(session.responses)) {
+    if (v && v.touched === true) out[k] = v;
+  }
+  return out;
+}
+
 /** Auto-save: writes the current session state to RTDB under the email-keyed
  *  node, with status='in_progress'. Called from a debounced effect on every
- *  state change, and explicitly when the reviewer clicks Save and exit. */
+ *  state change, and explicitly when the reviewer clicks Save and exit.
+ *  Only touched cards are written so the database reflects real annotations,
+ *  not pre-filled defaults. */
 export async function logProgress(session: Session): Promise<SubmissionResult> {
   try {
     if (!session.reviewer) return { ok: false, error: "no reviewer" };
     const database = ensure();
     const key = emailToKey(session.reviewer.email.toLowerCase());
     const path = `${RTDB_PATH}/${key}`;
+    const filtered = touchedResponses(session);
     const payload = {
       schemaVersion: session.schemaVersion,
       status: "in_progress",
       reviewer: session.reviewer,
       cardOrder: session.cardOrder,
-      responses: session.responses,
+      responses: filtered,
+      cardsTouchedCount: Object.keys(filtered).length,
       globalFeedback: session.globalFeedback,
       lastUpdate: serverTimestamp(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
     };
-    console.log("[firebase] progress write to", path);
+    console.log("[firebase] progress write to", path, "touched cards:", Object.keys(filtered).length);
     await set(ref(database, path), payload);
     console.log("[firebase] progress OK:", key);
     return { ok: true, documentId: key };
@@ -124,25 +139,28 @@ export async function logProfileStart(reviewer: ReviewerMeta): Promise<Submissio
 }
 
 /** Called on final Submit. Updates the email-keyed record with the full
- *  session payload and status=completed. */
+ *  session payload and status=completed. Like logProgress, only touched
+ *  cards are written; cards left at pure defaults are not represented. */
 export async function submitToFirestore(session: Session): Promise<SubmissionResult> {
   try {
     if (!session.reviewer) return { ok: false, error: "no reviewer in session" };
     const database = ensure();
     const key = emailToKey(session.reviewer.email.toLowerCase());
     const path = `${RTDB_PATH}/${key}`;
+    const filtered = touchedResponses(session);
     const payload = {
       schemaVersion: session.schemaVersion,
       status: "completed",
       reviewer: session.reviewer,
       cardOrder: session.cardOrder,
-      responses: session.responses,
+      responses: filtered,
+      cardsTouchedCount: Object.keys(filtered).length,
       globalFeedback: session.globalFeedback,
       submittedAt: serverTimestamp(),
       clientFinishedAt: session.finishedAt ?? new Date().toISOString(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
     };
-    console.log("[firebase] final submission write to", path);
+    console.log("[firebase] final submission write to", path, "touched cards:", Object.keys(filtered).length);
     await set(ref(database, path), payload);
     console.log("[firebase] final submission OK:", key);
     return { ok: true, documentId: key };

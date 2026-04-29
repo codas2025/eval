@@ -8,10 +8,23 @@ import { CARDS } from "../data/cards";
 import { logProgress } from "../firebase";
 
 const STORAGE_PREFIX = "codas-eval-session-";
-const SCHEMA_VERSION = "1";
+const SCHEMA_VERSION = "3";
 
-// Mulberry32 PRNG seeded from the reviewer ID for deterministic per-reviewer
-// card ordering.
+// Visual defaults for the Likert rubric items. Reviewers see "3" pre-checked
+// for each Likert question; the literature item has no default and must be
+// explicitly chosen.
+export const DEFAULT_RATINGS: Record<string, number> = {
+  validity: 3,
+  meaningfulness: 3,
+  novelty: 3,
+  measurability: 3,
+  added_value: 3,
+  advice_influence: 3,
+  real_world_action: 3,
+};
+
+// Mulberry32 PRNG seeded from the reviewer's email for deterministic
+// per-reviewer card ordering.
 function hashSeed(s: string): number {
   let h = 0;
   for (let i = 0; i < s.length; i++) {
@@ -48,23 +61,17 @@ function emptySession(): Session {
   };
 }
 
-// Default Likert ratings to 3 ("Neutral") so reviewers start with a low-
-// cognitive-load baseline and explicitly move the slider when they disagree.
-// The literature item has no default; they must explicitly pick.
+// Pre-fills the visual defaults so the radios show "3" without forcing the
+// reviewer to click. CRITICAL: touched=false marks this as a pure pre-fill;
+// the card is NOT considered "done" until the reviewer makes any explicit
+// change (which flips touched to true via updateResponse).
 function emptyResponse(cardId: string): CardResponse {
   return {
     cardId,
-    ratings: {
-      validity: 3,
-      meaningfulness: 3,
-      novelty: 3,
-      measurability: 3,
-      added_value: 3,
-      advice_influence: 3,
-      real_world_action: 3,
-    },
+    ratings: { ...DEFAULT_RATINGS },
     justifications: {},
     followUps: {},
+    touched: false,
   };
 }
 
@@ -92,9 +99,9 @@ export function useSession() {
     localStorage.setItem(STORAGE_PREFIX + reviewerId, JSON.stringify(session));
   }, [reviewerId, session]);
 
-  // Debounced cloud auto-save: 1.5 s after the last change, push the current
-  // session state to RTDB so coordinators see in-progress reviewers, not
-  // only the ones who reach final Submit.
+  // Debounced cloud auto-save: 1.5 s after the last change, push current
+  // session state to RTDB. logProgress() filters out untouched cards so the
+  // cloud only shows actual annotations.
   useEffect(() => {
     if (!reviewerId || !session.reviewer) return;
     const t = setTimeout(() => {
@@ -105,14 +112,14 @@ export function useSession() {
 
   const startSession = useCallback(
     (reviewer: ReviewerMeta) => {
-      // Use email (lowercased) as the deterministic seed so the same person
-      // always sees the same card order and calibration-arm assignment, even
-      // if their auto-generated reviewerId differs across visits.
       const seed = hashSeed(reviewer.email.toLowerCase());
       const order = shuffle(
         CARDS.map((c) => c.id),
         seed,
       );
+      // Pre-fill every card with its visual defaults so the rubric radios
+      // show "3" pre-checked. touched=false marks them as pure pre-fills;
+      // they will only count as completed after the reviewer makes a change.
       const responses: Record<string, CardResponse> = {};
       for (const id of order) responses[id] = emptyResponse(id);
       const next: Session = {
@@ -139,6 +146,9 @@ export function useSession() {
           ratings: { ...cur.ratings, ...(partial.ratings ?? {}) },
           justifications: { ...cur.justifications, ...(partial.justifications ?? {}) },
           followUps: { ...cur.followUps, ...(partial.followUps ?? {}) },
+          // ANY explicit update from the form flips touched to true. Pure
+          // pre-filled cards keep touched=false until the reviewer engages.
+          touched: true,
         };
         return {
           ...prev,
