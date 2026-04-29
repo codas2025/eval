@@ -24,14 +24,11 @@ interest. All fields except familiarity / outcomes / conflicts are required.
 
 ## Response capture
 
-Submitted sessions are written to a Firestore collection (default name
-`clinical-eval-responses`) with anonymous Firebase auth. Each document holds
-the reviewer metadata, the per-card responses, the global feedback, the
-session schema version, the server-side submission timestamp, and the user
-agent. A JSON copy can be downloaded as a backup.
-
-If the Firebase config is missing at build time the database step degrades
-to a no-op and the JSON download is the only submission path.
+Submitted sessions are pushed to a Firebase Realtime Database (RTDB) path
+`clinical-eval-responses/{auto-id}`. Each record holds the reviewer
+metadata, the per-card responses, the global feedback, the session schema
+version, the server-side submission timestamp, and the user agent. A JSON
+copy can be downloaded as a backup.
 
 ## Running locally
 
@@ -69,40 +66,25 @@ below, plus Anonymous auth.
 Pointing the app at a different Firebase project is a one-line change in
 `src/firebase.ts`. No GitHub Actions secrets are involved.
 
-## Firebase setup (one-time)
+## Firebase setup
 
-1. **Enable Anonymous auth**: Firebase Console → Authentication → Sign-in
-   method → enable Anonymous.
-2. **Create the Firestore database**: Firestore Database → Create database →
-   Production mode.
-3. **Apply rules** (Firestore → Rules):
+The Realtime Database for the configured project should already be set up
+from prior studies. If a write fails, check the RTDB rules — for an
+append-only response collection, a minimal permissive rule is:
 
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /clinical-eval-responses/{doc} {
-         allow create: if request.auth != null
-                       && request.resource.data.schemaVersion is string
-                       && request.resource.data.reviewer is map
-                       && request.resource.data.reviewer.email is string
-                       && request.resource.data.reviewer.email.matches('.+@.+\\..+')
-                       && request.resource.data.reviewer.name is string
-                       && request.resource.data.reviewer.institution is string
-                       && request.resource.data.responses is map
-                       && request.resource.data.submittedAt == request.time;
-         allow read, update, delete: if false;  // analyst reads via Admin SDK
-       }
-     }
-   }
-   ```
+```json
+{
+  "rules": {
+    "clinical-eval-responses": {
+      ".read": false,
+      ".write": true
+    }
+  }
+}
+```
 
-   These rules allow only authenticated (anonymous) clients to create
-   documents in the responses collection, with shape validation. Reads are
-   restricted to the Admin SDK / a coordinator's authenticated session.
-
-4. **Create the response collection** by submitting at least one test session
-   from the deployed site. Firestore creates the collection on first write.
+Reads are restricted to the Firebase Console / Admin SDK / authenticated
+coordinator. Writes are allowed without auth.
 
 ## Repo layout
 

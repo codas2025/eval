@@ -1,25 +1,17 @@
 // Firebase initialisation and submission helper.
 //
-// The Firebase web client config below is intentionally checked in: per
-// Firebase's own documentation, the web apiKey/projectId/etc. are not
-// secrets — they are bundled into the published JS and visible to every
-// site visitor in DevTools regardless. Security for Firestore writes is
-// enforced by Firestore rules (see README) and by Anonymous auth, which
-// requires authenticated UIDs and validates document shape on every write.
+// Uses Firebase Realtime Database (RTDB), matching the databaseURL in the
+// project config below. No sign-in required — writes go directly to RTDB
+// using the project's existing rules.
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
-  getAuth,
-  signInAnonymously,
-  type Auth,
-} from "firebase/auth";
-import {
-  getFirestore,
-  addDoc,
-  collection,
+  getDatabase,
+  ref,
+  push,
   serverTimestamp,
-  type Firestore,
-} from "firebase/firestore";
+  type Database,
+} from "firebase/database";
 import type { Session } from "./types";
 
 const firebaseConfig = {
@@ -33,21 +25,19 @@ const firebaseConfig = {
   measurementId: "G-DPD0YFJS7Z",
 };
 
-const COLLECTION = "clinical-eval-responses";
+const RTDB_PATH = "clinical-eval-responses";
 
 export const FIREBASE_CONFIGURED = true;
 
 let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let auth: Auth | null = null;
+let db: Database | null = null;
 
-function ensure(): { db: Firestore; auth: Auth } {
+function ensure(): Database {
   if (!app) {
     app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
+    db = getDatabase(app);
   }
-  return { db: db!, auth: auth! };
+  return db!;
 }
 
 export interface SubmissionResult {
@@ -58,11 +48,8 @@ export interface SubmissionResult {
 
 export async function submitToFirestore(session: Session): Promise<SubmissionResult> {
   try {
-    const { db, auth } = ensure();
-    if (!auth.currentUser) {
-      await signInAnonymously(auth);
-    }
-    const ref = await addDoc(collection(db, COLLECTION), {
+    const database = ensure();
+    const refNode = await push(ref(database, RTDB_PATH), {
       schemaVersion: session.schemaVersion,
       reviewer: session.reviewer,
       cardOrder: session.cardOrder,
@@ -71,9 +58,8 @@ export async function submitToFirestore(session: Session): Promise<SubmissionRes
       submittedAt: serverTimestamp(),
       clientFinishedAt: session.finishedAt ?? new Date().toISOString(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-      anonAuthUid: auth.currentUser?.uid ?? null,
     });
-    return { ok: true, documentId: ref.id };
+    return { ok: true, documentId: refNode.key ?? "(unknown)" };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
