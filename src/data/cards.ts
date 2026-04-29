@@ -27,7 +27,9 @@ function fmt(x: number, d = 2): string {
 
 /** Plain-language translation of a Spearman ρ into native outcome units,
  *  using the cohort's IQR (25th to 75th percentile) movement as the
- *  reference span. Avoids any formula notation. */
+ *  reference span. Avoids formula notation. For ratio-valued inputs, an
+ *  optional interpretation explains what the P25 / P75 ratio actually means
+ *  in clinical terms. */
 function rwt(args: {
   rho: number;
   inputSD: number;
@@ -37,12 +39,15 @@ function rwt(args: {
   outcomeSD: number;
   outcomeName: string;
   outcomeUnit: string;
-  perNightMultiplier?: number; // for inputs measured per-hour during a window
-  perNightWindow?: string; // for the per-night phrasing
+  /** Optional clinical interpretation of the P25 and P75 input values.
+   *  e.g., for night-to-day social ratio: "nocturnal use is ~2% of daytime use" */
+  interp?: { p25: string; p75: string };
+  perNightMultiplier?: number;
+  perNightWindow?: string;
 }): string {
   const {
     rho, inputSD, inputUnit, inputP25, inputP75,
-    outcomeSD, outcomeName, outcomeUnit,
+    outcomeSD, outcomeName, outcomeUnit, interp,
     perNightMultiplier, perNightWindow,
   } = args;
   const direction = rho >= 0 ? "higher" : "lower";
@@ -50,10 +55,16 @@ function rwt(args: {
   const iqrSpan = inputP75 - inputP25;
   const iqrDelta = (iqrSpan / inputSD) * sdDelta;
 
+  const p25text = interp
+    ? `${fmt(inputP25)} ${inputUnit} (${interp.p25})`
+    : `${fmt(inputP25)} ${inputUnit}`;
+  const p75text = interp
+    ? `${fmt(inputP75)} ${inputUnit} (${interp.p75})`
+    : `${fmt(inputP75)} ${inputUnit}`;
+
   const main =
-    `Across the cohort's typical range (25th percentile = ${fmt(inputP25)} ${inputUnit} ` +
-    `to 75th percentile = ${fmt(inputP75)} ${inputUnit}), ${outcomeName} is ` +
-    `about ${fmt(iqrDelta)} ${outcomeUnit} ${direction} on average.`;
+    `Across the cohort's typical range (25th percentile = ${p25text}, 75th percentile = ${p75text}), ` +
+    `${outcomeName} is about ${fmt(iqrDelta)} ${outcomeUnit} ${direction} on average.`;
 
   const sd =
     ` A 1 standard deviation increase in the input (≈ ${fmt(inputSD)} ${inputUnit}) ` +
@@ -64,8 +75,7 @@ function rwt(args: {
     const p25Night = inputP25 * perNightMultiplier;
     const p75Night = inputP75 * perNightMultiplier;
     perNight =
-      ` Re-expressed per night across the ${perNightWindow}: ` +
-      `about ${fmt(p25Night)} to ${fmt(p75Night)} minutes per night.`;
+      ` Per night across the ${perNightWindow}: about ${fmt(p25Night)} to ${fmt(p75Night)} minutes per night.`;
   }
   return main + sd + perNight;
 }
@@ -183,9 +193,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher night-to-day ratio is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.222, inputSD: 0.70, inputUnit: "ratio units",
+      rho: 0.222, inputSD: 0.70, inputUnit: "ratio",
       inputP25: 0.018, inputP75: 0.293,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
+      interp: {
+        p25: "nocturnal social use is roughly 2% of daytime social use",
+        p75: "nocturnal social use is roughly 29% of daytime social use",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -212,9 +226,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher hedonic-to-productivity ratio is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.152, inputSD: 12.7, inputUnit: "ratio units",
+      rho: 0.152, inputSD: 12.7, inputUnit: "ratio",
       inputP25: 0.38, inputP75: 7.19,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
+      interp: {
+        p25: "hedonic time is roughly 40% of productivity time (productivity-leaning user)",
+        p75: "hedonic time is roughly 7x productivity time (strongly hedonic-leaning user)",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -419,9 +437,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Lower AST/ALT (i.e., relatively higher ALT) is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.375, inputSD: 0.381, inputUnit: "ratio units",
+      rho: -0.375, inputSD: 0.381, inputUnit: "ratio",
       inputP25: 0.83, inputP75: 1.25,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      interp: {
+        p25: "AST is about 83% of ALT, the pattern classically seen in NAFLD and insulin resistance",
+        p75: "AST and ALT are roughly equal, slightly favouring AST",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -479,9 +501,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher fitness index is associated with lower HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.374, inputSD: 62.7, inputUnit: "steps/bpm",
+      rho: -0.374, inputSD: 62.7, inputUnit: "steps/bpm/day",
       inputP25: 79, inputP75: 147,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      interp: {
+        p25: "lower fitness profile, e.g., ~6,000 steps/day at resting HR ~75 bpm",
+        p75: "higher fitness profile, e.g., ~10,000 steps/day at resting HR ~70 bpm",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -538,9 +564,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Lower albumin/globulin ratio is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.220, inputSD: 0.277, inputUnit: "ratio units",
+      rho: -0.220, inputSD: 0.277, inputUnit: "ratio",
       inputP25: 1.6, inputP75: 1.9,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      interp: {
+        p25: "lower albumin/globulin (suggestive of hepatic synthetic stress or inflammation)",
+        p75: "near-normal-to-healthy albumin/globulin",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -571,9 +601,13 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher TG/HDL is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: 0.562, inputSD: 1.43, inputUnit: "ratio units",
+      rho: 0.562, inputSD: 1.43, inputUnit: "ratio",
       inputP25: 1.04, inputP75: 2.44,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      interp: {
+        p25: "low cardiometabolic risk pattern (TG ≈ HDL)",
+        p75: "elevated cardiometabolic risk pattern (TG roughly 2.4x HDL)",
+      },
     }),
     controlledFor:
       "Not adjusted for any covariates.",
