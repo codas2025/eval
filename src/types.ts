@@ -61,7 +61,7 @@ export type LikertChoice = 1 | 2 | 3 | 4 | 5;
 
 export interface RubricItem {
   id: string;
-  letter: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
+  letter: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I";
   required: boolean;
   prompt: string;
   scaleType: "likert5" | "literature5" | "freetext";
