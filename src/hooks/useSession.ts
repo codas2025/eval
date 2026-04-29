@@ -47,10 +47,21 @@ function emptySession(): Session {
   };
 }
 
+// Default Likert ratings to 3 ("Neutral") so reviewers start with a low-
+// cognitive-load baseline and explicitly move the slider when they disagree.
+// The literature item has no default — they must explicitly pick.
 function emptyResponse(cardId: string): CardResponse {
   return {
     cardId,
-    ratings: {},
+    ratings: {
+      validity: 3,
+      meaningfulness: 3,
+      novelty: 3,
+      measurability: 3,
+      added_value: 3,
+      advice_influence: 3,
+      real_world_action: 3,
+    },
     justifications: {},
     followUps: {},
   };

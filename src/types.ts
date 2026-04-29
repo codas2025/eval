@@ -22,6 +22,12 @@ export interface Cohort {
   endpointDist: Distribution;
   endpointCutoff?: number;
   covariates: string[];
+  /** High-level feature domains available to CoDaS for biomarker discovery in
+   *  this cohort. Shown to clinicians so they can see the search space. */
+  availableColumns: { domain: string; nFeatures?: number; examples?: string[] }[];
+  /** Brief one-liner about the source dataset, plus a citation/paper URL. */
+  sourceDescription: string;
+  sourceUrl?: string;
   notes?: string;
 }
 
@@ -73,9 +79,11 @@ export interface ReviewerMeta {
   institution: string;
   // expertise
   expertise: string;
-  yearsOfExpertise: string;
+  /** Integer years of expertise (post-residency / equivalent). */
+  yearsOfExpertise: number;
   wearableFamiliarity: number;
-  outcomesUsed: string[];
+  /** Open-ended description of outcome measures used routinely. */
+  outcomesUsed: string;
   conflicts: string;
   // session
   reviewerId: string;

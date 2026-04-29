@@ -13,13 +13,9 @@ const EXPERTISE_AREAS = [
   "Other",
 ];
 
-const YEARS_OPTIONS = ["<5", "5–10", "11–20", ">20"];
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function genReviewerId(): string {
-  // short reproducible-looking ID from time + random for the doc-key fallback;
-  // not used for identification, just for localStorage namespacing.
   const t = Date.now().toString(36).slice(-5);
   const r = Math.random().toString(36).slice(2, 7);
   return `R-${t}${r}`.toUpperCase();
@@ -27,45 +23,55 @@ function genReviewerId(): string {
 
 export function ReviewerForm({
   onSubmit,
+  onBack,
 }: {
   onSubmit: (m: ReviewerMeta) => void;
+  onBack: () => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [institution, setInstitution] = useState("");
   const [expertise, setExpertise] = useState("");
   const [otherExpertise, setOtherExpertise] = useState("");
-  const [years, setYears] = useState("");
+  const [yearsText, setYearsText] = useState("");
   const [familiarity, setFamiliarity] = useState(3);
-  const [outcomes, setOutcomes] = useState<string[]>([]);
+  const [outcomes, setOutcomes] = useState("");
   const [conflicts, setConflicts] = useState("");
 
-  const toggleOutcome = (id: string) =>
-    setOutcomes((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+  const yearsValue = Number.parseInt(yearsText, 10);
+  const yearsValid =
+    yearsText.trim() !== "" &&
+    Number.isFinite(yearsValue) &&
+    yearsValue >= 0 &&
+    yearsValue <= 70;
 
   const emailOk = EMAIL_RE.test(email.trim());
-  const expertiseOk = expertise !== "" && (expertise !== "Other" || otherExpertise.trim() !== "");
+  const expertiseOk =
+    expertise !== "" && (expertise !== "Other" || otherExpertise.trim() !== "");
   const canSubmit =
     name.trim().length >= 2 &&
     emailOk &&
     institution.trim().length >= 2 &&
     expertiseOk &&
-    years !== "";
+    yearsValid;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1>Reviewer information</h1>
-      <p className="mt-2 text-sm text-ink-500">
-        Used to characterise the panel composition and to contact you with the
-        submission receipt. Your details are stored alongside your responses;
-        the study coordinator will treat them as confidential.
-      </p>
+      <button
+        className="btn btn-secondary mb-4"
+        type="button"
+        onClick={onBack}
+      >
+        ← Back
+      </button>
+
+      <h1>Profile</h1>
 
       <div className="mt-6 card p-6 space-y-5">
         <div>
-          <label className="label">Full name <span className="text-rose-600">*</span></label>
+          <label className="label">
+            Full name <span className="text-rose-600">*</span>
+          </label>
           <input
             className="input"
             value={name}
@@ -76,7 +82,9 @@ export function ReviewerForm({
         </div>
 
         <div>
-          <label className="label">Email <span className="text-rose-600">*</span></label>
+          <label className="label">
+            Email <span className="text-rose-600">*</span>
+          </label>
           <input
             className="input"
             type="email"
@@ -93,7 +101,9 @@ export function ReviewerForm({
         </div>
 
         <div>
-          <label className="label">Institution <span className="text-rose-600">*</span></label>
+          <label className="label">
+            Institution <span className="text-rose-600">*</span>
+          </label>
           <input
             className="input"
             value={institution}
@@ -104,7 +114,9 @@ export function ReviewerForm({
         </div>
 
         <div>
-          <label className="label">Expertise / primary specialty <span className="text-rose-600">*</span></label>
+          <label className="label">
+            Expertise / primary specialty <span className="text-rose-600">*</span>
+          </label>
           <select
             className="select"
             value={expertise}
@@ -128,53 +140,72 @@ export function ReviewerForm({
         </div>
 
         <div>
-          <label className="label">Years of expertise (post-residency) <span className="text-rose-600">*</span></label>
-          <div className="mt-1 flex gap-2 flex-wrap">
-            {YEARS_OPTIONS.map((y) => (
-              <button
-                key={y}
-                className={`btn btn-secondary ${years === y ? "ring-2 ring-ink-700" : ""}`}
-                onClick={() => setYears(y)}
-                type="button"
+          <label className="label">
+            Years of expertise (post-residency, integer){" "}
+            <span className="text-rose-600">*</span>
+          </label>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            max={70}
+            step={1}
+            inputMode="numeric"
+            value={yearsText}
+            onChange={(e) => setYearsText(e.target.value.replace(/[^\d]/g, ""))}
+            placeholder="e.g., 8"
+          />
+          {yearsText.length > 0 && !yearsValid && (
+            <div className="mt-1 text-xs text-rose-600">
+              Please enter an integer between 0 and 70.
+            </div>
+          )}
+        </div>
+
+        <fieldset>
+          <legend className="label">
+            Familiarity with wearable / digital phenotyping data
+          </legend>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-5">
+            {[
+              { v: 1, label: "1 — None" },
+              { v: 2, label: "2 — A little" },
+              { v: 3, label: "3 — Moderate" },
+              { v: 4, label: "4 — Substantial" },
+              { v: 5, label: "5 — Expert" },
+            ].map((opt) => (
+              <label
+                key={opt.v}
+                className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm ${
+                  familiarity === opt.v
+                    ? "border-ink-700 bg-ink-900 text-white"
+                    : "border-stone-200 bg-white text-ink-900 hover:bg-stone-50"
+                }`}
               >
-                {y}
-              </button>
+                <input
+                  type="radio"
+                  name="familiarity"
+                  className="accent-current"
+                  checked={familiarity === opt.v}
+                  onChange={() => setFamiliarity(opt.v)}
+                />
+                <span>{opt.label}</span>
+              </label>
             ))}
           </div>
-        </div>
+        </fieldset>
 
         <div>
           <label className="label">
-            Familiarity with wearable / digital phenotyping data (1=none, 5=expert)
+            Outcome measures or screening tools you use routinely (optional)
           </label>
-          <div className="mt-1 flex gap-2">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                className={`btn btn-secondary ${familiarity === n ? "ring-2 ring-ink-700" : ""}`}
-                type="button"
-                onClick={() => setFamiliarity(n)}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="label">Outcome instruments you use routinely</label>
-          <div className="mt-1 flex gap-2 flex-wrap">
-            {["PHQ-8", "PHQ-4", "HOMA-IR", "none"].map((o) => (
-              <button
-                key={o}
-                type="button"
-                className={`btn btn-secondary ${outcomes.includes(o) ? "ring-2 ring-ink-700" : ""}`}
-                onClick={() => toggleOutcome(o)}
-              >
-                {o}
-              </button>
-            ))}
-          </div>
+          <textarea
+            className="textarea"
+            rows={2}
+            value={outcomes}
+            onChange={(e) => setOutcomes(e.target.value)}
+            placeholder="Free text — e.g., depression screeners (PHQ-2/PHQ-9), HbA1c / fasting glucose, BP monitoring, sleep history, etc."
+          />
         </div>
 
         <div>
@@ -189,7 +220,10 @@ export function ReviewerForm({
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex items-center justify-between">
+        <button className="btn btn-secondary" type="button" onClick={onBack}>
+          ← Back
+        </button>
         <button
           className="btn btn-primary"
           disabled={!canSubmit}
@@ -198,10 +232,11 @@ export function ReviewerForm({
               name: name.trim(),
               email: email.trim().toLowerCase(),
               institution: institution.trim(),
-              expertise: expertise === "Other" ? otherExpertise.trim() : expertise,
-              yearsOfExpertise: years,
+              expertise:
+                expertise === "Other" ? otherExpertise.trim() : expertise,
+              yearsOfExpertise: yearsValue,
               wearableFamiliarity: familiarity,
-              outcomesUsed: outcomes,
+              outcomesUsed: outcomes.trim(),
               conflicts: conflicts.trim(),
               reviewerId: genReviewerId(),
               startedAt: new Date().toISOString(),

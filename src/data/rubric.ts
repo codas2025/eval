@@ -60,8 +60,23 @@ export const RUBRIC: RubricItem[] = [
       "Citation(s) you would use to support or contest the claim (free text, optional)",
   },
   {
-    id: "measurability",
+    id: "novelty",
     letter: "D",
+    required: true,
+    prompt:
+      "Novelty — within your specialty, how novel is this specific feature–endpoint association as a clinical signal? (Established existing markers should rate low; genuinely new constructs should rate high.)",
+    scaleType: "likert5",
+    anchors: [
+      { value: 1, label: "1 — Already standard practice" },
+      { value: 2, label: "2 — Well-recognised" },
+      { value: 3, label: "3 — Discussed but not mainstream" },
+      { value: 4, label: "4 — Emerging" },
+      { value: 5, label: "5 — Genuinely novel" },
+    ],
+  },
+  {
+    id: "measurability",
+    letter: "E",
     required: true,
     prompt:
       "Practical measurability of the input — how feasible is it to measure the input variable in routine clinical practice today?",
@@ -78,7 +93,7 @@ export const RUBRIC: RubricItem[] = [
   },
   {
     id: "added_value",
-    letter: "E",
+    letter: "F",
     required: true,
     prompt:
       "Added value over existing biomarkers — compared with the biomarkers and clinical signals you already use to assess this outcome, does this candidate add value (incremental information, lower cost, lower invasiveness, earlier detection)?",
@@ -97,7 +112,7 @@ export const RUBRIC: RubricItem[] = [
   },
   {
     id: "advice_influence",
-    letter: "F",
+    letter: "G",
     required: true,
     prompt:
       "Likelihood to influence patient advice or treatment — in the next 1–2 years, if a result like this were available for one of your patients, how likely would it be to change the advice you give them or the treatment plan you propose?",
@@ -114,7 +129,7 @@ export const RUBRIC: RubricItem[] = [
   },
   {
     id: "real_world_action",
-    letter: "G",
+    letter: "H",
     required: true,
     prompt:
       "Confidence to act in a real-world setting — how confident would you be acting on this result clinically (e.g., recommending a behavioural change, ordering a follow-up test) for an individual patient at the population-typical effect size shown here?",
@@ -131,7 +146,7 @@ export const RUBRIC: RubricItem[] = [
   },
   {
     id: "open_concerns",
-    letter: "H",
+    letter: "I",
     required: false,
     prompt:
       "Additional concerns, alternative interpretations, scope conditions, or potential harms if this biomarker were deployed",

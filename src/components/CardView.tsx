@@ -10,6 +10,25 @@ function pillClass(t: ResultCard["evidenceTier"]) {
   }
 }
 
+function fmtRho(r: number) {
+  return `${r >= 0 ? "+" : ""}${r.toFixed(3)}`;
+}
+
+function distString(d: ResultCard["inputDist"]) {
+  if (!d) return null;
+  return `mean = ${d.mean.toFixed(3)}, SD = ${d.sd.toFixed(3)}, median = ${d.median.toFixed(3)}, IQR = [${d.p25.toFixed(3)}, ${d.p75.toFixed(3)}]${
+    d.min != null && d.max != null
+      ? `, range = [${d.min.toFixed(2)}, ${d.max.toFixed(2)}]`
+      : ""
+  } (n = ${d.n.toLocaleString()})`;
+}
+
+interface Row {
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+}
+
 export function CardView({
   card,
   cohort,
@@ -19,17 +38,83 @@ export function CardView({
   cohort: Cohort;
   showProbeAnnotation: boolean;
 }) {
-  const d = card.inputDist;
+  const rows: Row[] = [
+    { label: "Input variable", value: card.title },
+    {
+      label: "Operational definition",
+      value: card.inputDefinition,
+    },
+    { label: "Input units", value: card.inputUnits },
+    {
+      label: "Cohort distribution of input",
+      value:
+        card.inputDist
+          ? distString(card.inputDist)
+          : (
+            <span className="italic text-ink-500">
+              Not available in the static dataset (
+              {card.inputDistSource === "manuscript"
+                ? "feature is computed during pipeline runtime; manuscript-reported ρ is reproduced verbatim"
+                : "n/a"}
+              )
+            </span>
+          ),
+    },
+    { label: "Endpoint", value: card.outputLabel },
+    {
+      label: "Spearman ρ (univariate)",
+      value: (
+        <>
+          <b>{fmtRho(card.rho)}</b>
+          {card.rhoCI ? (
+            <>
+              {" "}
+              · 95% CI [{card.rhoCI[0].toFixed(2)}, {card.rhoCI[1].toFixed(2)}]
+            </>
+          ) : null}{" "}
+          · p {card.pValue}
+        </>
+      ),
+      hint:
+        card.rhoVerifiedFromData != null
+          ? `Verification on the static dataset: observed ρ = ${fmtRho(card.rhoVerifiedFromData)}${
+              Math.abs(card.rhoVerifiedFromData - card.rho) < 0.03
+                ? " (matches manuscript within ±0.03)"
+                : ` (drift of ${Math.abs(card.rhoVerifiedFromData - card.rho).toFixed(3)} from the manuscript value)`
+            }.`
+          : undefined,
+    },
+    { label: "Direction", value: card.direction },
+    {
+      label: "Real-world translation",
+      value: card.realWorldTranslation,
+      hint:
+        "Spearman ρ is rank-based; the SD-scaled translation is an approximation valid under monotonic-linear assumption. The IQR translation is the more defensible verbal guide.",
+    },
+    {
+      label: "Variables controlled for",
+      value: card.controlledFor,
+    },
+    ...(card.composite
+      ? [{ label: "How this feature is constructed", value: <code className="font-mono text-xs">{card.composite.formula}</code> }]
+      : []),
+    {
+      label: "Mechanistic hypothesis (CoDaS literature-grounded)",
+      value: card.mechanism,
+    },
+    { label: "Evidence tier (per CoDaS literature search)", value: card.evidenceTier },
+  ];
+
   return (
     <div className="space-y-4">
       <CohortHeader cohort={cohort} />
 
       <div className="card p-6">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-ink-500">{card.id}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-mono text-xs text-ink-500">{card.id}</span>
           <span className={pillClass(card.evidenceTier)}>
             {card.evidenceTier === "Rejected" && !showProbeAnnotation
-              ? "Established"  // hide rejection annotation for one of the calibration arms
+              ? "Established"
               : card.evidenceTier}
           </span>
           {card.composite && (
@@ -48,95 +133,40 @@ export function CardView({
           column: {card.manuscriptColumn}
         </div>
 
-        <Section title="Input variable">
-          <p>{card.inputDefinition}</p>
-          <p className="mt-2 text-xs text-ink-500">
-            <b>Units:</b> {card.inputUnits}.
-          </p>
-          {d ? (
-            <p className="mt-1 text-xs text-ink-500">
-              <b>Cohort distribution (from data):</b> n = {d.n.toLocaleString()},
-              mean = {d.mean.toFixed(3)}, SD = {d.sd.toFixed(3)}, median ={" "}
-              {d.median.toFixed(3)}, IQR = [{d.p25.toFixed(3)},{" "}
-              {d.p75.toFixed(3)}]
-              {d.min != null && d.max != null
-                ? `, range = [${d.min.toFixed(2)}, ${d.max.toFixed(2)}]`
-                : ""}
-              .
-            </p>
-          ) : (
-            <p className="mt-1 text-xs text-ink-500 italic">
-              Cohort distribution not available in the static dataset (
-              {card.inputDistSource === "manuscript"
-                ? "feature is computed during pipeline runtime; manuscript-reported ρ is reproduced verbatim"
-                : "n/a"}
-              ).
-            </p>
-          )}
-        </Section>
+        <div className="mt-4 overflow-hidden rounded-md border border-stone-200">
+          <table className="w-full text-sm">
+            <tbody>
+              {rows.map((row) => (
+                <tr
+                  key={row.label}
+                  className="border-t border-stone-100 first:border-t-0 align-top"
+                >
+                  <td className="w-[34%] bg-stone-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink-700">
+                    {row.label}
+                  </td>
+                  <td className="px-3 py-2 leading-relaxed text-ink-900">
+                    <div>{row.value}</div>
+                    {row.hint && (
+                      <div className="mt-1 text-xs text-ink-500">{row.hint}</div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <Section title="Output variable (endpoint)">
-          <p>{card.outputLabel}</p>
-        </Section>
-
-        <Section title="Reported association (univariate)">
-          <p>
-            Spearman ρ ={" "}
-            <b>
-              {card.rho >= 0 ? "+" : ""}
-              {card.rho.toFixed(3)}
-            </b>
-            {card.rhoCI && (
-              <>
-                {" "}, 95% CI [{card.rhoCI[0].toFixed(2)}, {card.rhoCI[1].toFixed(2)}]
-              </>
-            )}
-            ; p {card.pValue}.
-          </p>
-          <p className="mt-1 text-sm">{card.direction}</p>
-          {card.rhoVerifiedFromData != null && (
-            <p className="mt-1 text-xs text-ink-500">
-              <b>Verification</b> (recomputed on the static dataset): observed ρ
-              = {card.rhoVerifiedFromData >= 0 ? "+" : ""}
-              {card.rhoVerifiedFromData.toFixed(3)} —{" "}
-              {Math.abs(card.rhoVerifiedFromData - card.rho) < 0.03
-                ? "matches manuscript within ±0.03"
-                : `drift of ${Math.abs(card.rhoVerifiedFromData - card.rho).toFixed(3)} from manuscript value`}
-              .
-            </p>
-          )}
-        </Section>
-
-        <Section title="Real-world translation">
-          <p>{card.realWorldTranslation}</p>
-          <p className="mt-1 text-xs text-ink-500">
-            Spearman ρ is rank-based; the SD-scaled translation is an
-            approximation valid under monotonic-linear assumption. Use the IQR
-            translation as the more defensible verbal guide.
-          </p>
-        </Section>
-
-        <Section title="Variables controlled for / not controlled for">
-          <p>{card.controlledFor}</p>
-        </Section>
-
-        {card.composite && (
-          <Section title="How CoDaS constructed this feature">
-            <p className="font-mono text-xs">{card.composite.formula}</p>
-          </Section>
-        )}
-
-        <Section title="Mechanistic hypothesis (CoDaS literature-grounded)">
-          <p>{card.mechanism}</p>
-        </Section>
-
-        <Section title="Caveats and known limitations">
-          <p>{card.caveats}</p>
-        </Section>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-700">
+            Caveats and known limitations
+          </h3>
+          <p className="mt-1 text-sm leading-relaxed text-ink-900">{card.caveats}</p>
+        </div>
 
         {card.isCalibrationProbe && showProbeAnnotation && (
-          <Section title="⚠ Calibration probe (study methodology)">
-            <p className="text-rose-700">
+          <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+            <div className="font-medium">⚠ Calibration probe (study methodology)</div>
+            <p className="mt-1 text-xs leading-relaxed">
               This row was REJECTED by CoDaS's construct-independence gate.
               Triglycerides and HDL are direct definitional components of
               metabolic syndrome and the ratio exhibits a near-tautological
@@ -144,27 +174,8 @@ export function CardView({
               pipeline's leakage-detection. Please rate it as you would any
               other candidate.
             </p>
-          </Section>
+          </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-5">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-700">
-        {title}
-      </h3>
-      <div className="mt-1 text-sm leading-relaxed text-ink-900">
-        {children}
       </div>
     </div>
   );
