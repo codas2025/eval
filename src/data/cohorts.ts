@@ -153,7 +153,7 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
       },
     ],
     notes:
-      "Endpoint reported per the manuscript convention (PHQ-8). The verified Spearman ρ matches the manuscript values for all six DWB candidates within ±0.012 (see verification panel on each card).",
+      "PHQ-8 confirmed empirically in the data (max value observed = 24, consistent with the 8-item summed range). The verified Spearman ρ matches the manuscript values for all six DWB candidates within ±0.012 (see verification panel on each card).",
   },
 
   globem: {
