@@ -24,7 +24,7 @@ export function ProgressBar({ session }: { session: Session }) {
     <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-3 text-xs">
         <div className="font-mono text-ink-500">
-          Reviewer {session.reviewer?.reviewerId ?? "—"}
+          Reviewer {session.reviewer?.name ?? "—"}{session.reviewer?.institution ? ` · ${session.reviewer.institution}` : ""}
         </div>
         <div className="flex items-center gap-3">
           <div className="text-ink-500">

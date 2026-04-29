@@ -47,8 +47,9 @@ export function Welcome({ onStart }: { onStart: () => void }) {
             any controlled or uncontrolled covariates.
           </li>
           <li>
-            Card order is randomised per reviewer using your reviewer ID as the
-            seed, so results are reproducible if you reload.
+            Card order is randomised per reviewer using your email address as
+            the seed, so the same reviewer always sees the same order even
+            across reloads or browsers.
           </li>
         </ul>
       </section>

@@ -35,13 +35,15 @@ export default function App() {
   );
   const cohort = activeCard ? COHORTS[activeCard.cohortId] : null;
 
-  // Calibration probe randomization: based on reviewer ID hash, half the
-  // panel sees the rejection annotation, the other half does not.
+  // Calibration probe randomization: based on the reviewer's email hash, half
+  // the panel sees the rejection annotation, the other half does not. Using
+  // email keeps the arm stable for the same person across sessions.
   const showProbeAnnotation = useMemo(() => {
     if (!session.reviewer) return true;
+    const key = session.reviewer.email.toLowerCase();
     let h = 0;
-    for (let i = 0; i < session.reviewer.reviewerId.length; i++) {
-      h = ((h << 5) - h + session.reviewer.reviewerId.charCodeAt(i)) | 0;
+    for (let i = 0; i < key.length; i++) {
+      h = ((h << 5) - h + key.charCodeAt(i)) | 0;
     }
     return (h >>> 0) % 2 === 0;
   }, [session.reviewer]);

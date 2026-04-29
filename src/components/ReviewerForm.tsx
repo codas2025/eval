@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReviewerMeta } from "../types";
 
-const SPECIALTIES = [
+const EXPERTISE_AREAS = [
   "Internal Medicine",
   "Endocrinology",
   "Preventive Cardiology",
@@ -15,14 +15,26 @@ const SPECIALTIES = [
 
 const YEARS_OPTIONS = ["<5", "5–10", "11–20", ">20"];
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function genReviewerId(): string {
+  // short reproducible-looking ID from time + random for the doc-key fallback;
+  // not used for identification, just for localStorage namespacing.
+  const t = Date.now().toString(36).slice(-5);
+  const r = Math.random().toString(36).slice(2, 7);
+  return `R-${t}${r}`.toUpperCase();
+}
+
 export function ReviewerForm({
   onSubmit,
 }: {
   onSubmit: (m: ReviewerMeta) => void;
 }) {
-  const [reviewerId, setReviewerId] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [otherSpecialty, setOtherSpecialty] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [institution, setInstitution] = useState("");
+  const [expertise, setExpertise] = useState("");
+  const [otherExpertise, setOtherExpertise] = useState("");
   const [years, setYears] = useState("");
   const [familiarity, setFamiliarity] = useState(3);
   const [outcomes, setOutcomes] = useState<string[]>([]);
@@ -33,54 +45,90 @@ export function ReviewerForm({
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
+  const emailOk = EMAIL_RE.test(email.trim());
+  const expertiseOk = expertise !== "" && (expertise !== "Other" || otherExpertise.trim() !== "");
   const canSubmit =
-    reviewerId.trim().length >= 3 &&
-    (specialty !== "" && (specialty !== "Other" || otherSpecialty.trim() !== "")) &&
+    name.trim().length >= 2 &&
+    emailOk &&
+    institution.trim().length >= 2 &&
+    expertiseOk &&
     years !== "";
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
       <h1>Reviewer information</h1>
       <p className="mt-2 text-sm text-ink-500">
-        Used only to characterise the panel composition; never linked to
-        identifying information.
+        Used to characterise the panel composition and to contact you with the
+        submission receipt. Your details are stored alongside your responses;
+        the study coordinator will treat them as confidential.
       </p>
 
       <div className="mt-6 card p-6 space-y-5">
         <div>
-          <label className="label">Reviewer ID (assigned, not your name)</label>
+          <label className="label">Full name <span className="text-rose-600">*</span></label>
           <input
             className="input"
-            value={reviewerId}
-            onChange={(e) => setReviewerId(e.target.value)}
-            placeholder="e.g., R-001 (the coordinator will provide this)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Jane Doe, MD"
+            autoComplete="name"
           />
         </div>
+
         <div>
-          <label className="label">Primary specialty</label>
+          <label className="label">Email <span className="text-rose-600">*</span></label>
+          <input
+            className="input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@institution.org"
+            autoComplete="email"
+          />
+          {email.length > 0 && !emailOk && (
+            <div className="mt-1 text-xs text-rose-600">
+              Please enter a valid email address.
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="label">Institution <span className="text-rose-600">*</span></label>
+          <input
+            className="input"
+            value={institution}
+            onChange={(e) => setInstitution(e.target.value)}
+            placeholder="e.g., Massachusetts General Hospital"
+            autoComplete="organization"
+          />
+        </div>
+
+        <div>
+          <label className="label">Expertise / primary specialty <span className="text-rose-600">*</span></label>
           <select
             className="select"
-            value={specialty}
-            onChange={(e) => setSpecialty(e.target.value)}
+            value={expertise}
+            onChange={(e) => setExpertise(e.target.value)}
           >
-            <option value="">Select specialty…</option>
-            {SPECIALTIES.map((s) => (
+            <option value="">Select expertise…</option>
+            {EXPERTISE_AREAS.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
           </select>
-          {specialty === "Other" && (
+          {expertise === "Other" && (
             <input
               className="input mt-2"
-              value={otherSpecialty}
-              onChange={(e) => setOtherSpecialty(e.target.value)}
-              placeholder="Enter specialty"
+              value={otherExpertise}
+              onChange={(e) => setOtherExpertise(e.target.value)}
+              placeholder="Enter expertise area"
             />
           )}
         </div>
+
         <div>
-          <label className="label">Years in clinical practice (post-residency)</label>
+          <label className="label">Years of expertise (post-residency) <span className="text-rose-600">*</span></label>
           <div className="mt-1 flex gap-2 flex-wrap">
             {YEARS_OPTIONS.map((y) => (
               <button
@@ -94,6 +142,7 @@ export function ReviewerForm({
             ))}
           </div>
         </div>
+
         <div>
           <label className="label">
             Familiarity with wearable / digital phenotyping data (1=none, 5=expert)
@@ -111,6 +160,7 @@ export function ReviewerForm({
             ))}
           </div>
         </div>
+
         <div>
           <label className="label">Outcome instruments you use routinely</label>
           <div className="mt-1 flex gap-2 flex-wrap">
@@ -126,6 +176,7 @@ export function ReviewerForm({
             ))}
           </div>
         </div>
+
         <div>
           <label className="label">Conflicts of interest (optional)</label>
           <textarea
@@ -144,12 +195,15 @@ export function ReviewerForm({
           disabled={!canSubmit}
           onClick={() =>
             onSubmit({
-              reviewerId: reviewerId.trim(),
-              specialty: specialty === "Other" ? otherSpecialty.trim() : specialty,
-              yearsPracticing: years,
+              name: name.trim(),
+              email: email.trim().toLowerCase(),
+              institution: institution.trim(),
+              expertise: expertise === "Other" ? otherExpertise.trim() : expertise,
+              yearsOfExpertise: years,
               wearableFamiliarity: familiarity,
               outcomesUsed: outcomes,
               conflicts: conflicts.trim(),
+              reviewerId: genReviewerId(),
               startedAt: new Date().toISOString(),
             })
           }
@@ -157,6 +211,9 @@ export function ReviewerForm({
           Begin reviewing →
         </button>
       </div>
+      <p className="mt-3 text-right text-xs text-ink-500">
+        Required fields are marked <span className="text-rose-600">*</span>.
+      </p>
     </div>
   );
 }

@@ -67,12 +67,18 @@ export interface RubricItem {
 }
 
 export interface ReviewerMeta {
-  reviewerId: string;
-  specialty: string;
-  yearsPracticing: string;
+  // identity
+  name: string;
+  email: string;
+  institution: string;
+  // expertise
+  expertise: string;
+  yearsOfExpertise: string;
   wearableFamiliarity: number;
   outcomesUsed: string[];
   conflicts: string;
+  // session
+  reviewerId: string;
   startedAt: string;
 }
 

@@ -11,13 +11,34 @@ The interface walks each clinician through a fixed set of biomarker candidates
 plus a calibration probe. For each candidate the clinician sees a one-page
 result card and rates it along seven dimensions on a 5-point Likert scale plus
 open-ended fields. Card order is randomised per reviewer (deterministic by
-reviewer-ID hash, so reloads preserve the same order).
+email hash, so the same person sees the same order across visits).
+
+Live: **https://codas2025.github.io/eval/**
+
+## Reviewer metadata captured
+
+The opening form collects: full name, email, institution, expertise / primary
+specialty, years of expertise, self-rated familiarity with wearable / digital
+phenotyping data, outcome instruments routinely used, and any conflicts of
+interest. All fields except familiarity / outcomes / conflicts are required.
+
+## Response capture
+
+Submitted sessions are written to a Firestore collection (default name
+`clinical-eval-responses`) with anonymous Firebase auth. Each document holds
+the reviewer metadata, the per-card responses, the global feedback, the
+session schema version, the server-side submission timestamp, and the user
+agent. A JSON copy can be downloaded as a backup.
+
+If the Firebase config is missing at build time the database step degrades
+to a no-op and the JSON download is the only submission path.
 
 ## Running locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+cp .env.example .env.local        # then fill in your Firebase web config
+npm run dev                       # http://localhost:5173
 ```
 
 ## Building for static hosting
@@ -37,14 +58,68 @@ VITE_BASE='/eval/' npm run build
 A GitHub Actions workflow at `.github/workflows/deploy.yml` performs this
 build automatically on every push to `main` and publishes to GitHub Pages.
 
+### GitHub Actions secrets required
+
+For the deployed site to write to Firestore, the following repository secrets
+must be set under Settings → Secrets and variables → Actions:
+
+| Secret                                | Source                                 |
+|---------------------------------------|----------------------------------------|
+| `VITE_FIREBASE_API_KEY`               | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_AUTH_DOMAIN`           | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_PROJECT_ID`            | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_STORAGE_BUCKET`        | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID`   | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_APP_ID`                | Firebase Console → Project Settings    |
+| `VITE_FIREBASE_COLLECTION` (optional) | Default `clinical-eval-responses`      |
+
+The web client config (apiKey etc.) is not a secret per Firebase's own docs —
+security is enforced by Firestore rules below. We still keep them in Actions
+secrets so the public repo and the build logs don't carry the literal values.
+
+## Firebase setup (one-time)
+
+1. **Enable Anonymous auth**: Firebase Console → Authentication → Sign-in
+   method → enable Anonymous.
+2. **Create the Firestore database**: Firestore Database → Create database →
+   Production mode.
+3. **Apply rules** (Firestore → Rules):
+
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /clinical-eval-responses/{doc} {
+         allow create: if request.auth != null
+                       && request.resource.data.schemaVersion is string
+                       && request.resource.data.reviewer is map
+                       && request.resource.data.reviewer.email is string
+                       && request.resource.data.reviewer.email.matches('.+@.+\\..+')
+                       && request.resource.data.reviewer.name is string
+                       && request.resource.data.reviewer.institution is string
+                       && request.resource.data.responses is map
+                       && request.resource.data.submittedAt == request.time;
+         allow read, update, delete: if false;  // analyst reads via Admin SDK
+       }
+     }
+   }
+   ```
+
+   These rules allow only authenticated (anonymous) clients to create
+   documents in the responses collection, with shape validation. Reads are
+   restricted to the Admin SDK / a coordinator's authenticated session.
+
+4. **Create the response collection** by submitting at least one test session
+   from the deployed site. Firestore creates the collection on first write.
+
 ## Repo layout
 
 ```
 .
 ├── index.html, vite.config.ts, tsconfig*.json,
-│   tailwind.config.js, postcss.config.js, package.json
+│   tailwind.config.js, postcss.config.js, package.json, .env.example
 └── src/
-    ├── main.tsx, App.tsx, index.css, types.ts
+    ├── main.tsx, App.tsx, index.css, types.ts, firebase.ts
     ├── data/
     │   ├── cohorts.ts        # cohort summaries shown in the header
     │   ├── cards.ts          # result cards with verified ρ + IQR translation
@@ -57,24 +132,18 @@ build automatically on every push to `main` and publishes to GitHub Pages.
         ├── RubricForm.tsx, Progress.tsx, Submit.tsx
 ```
 
-## Response capture
-
-Responses are stored in the browser's `localStorage` keyed by reviewer ID and
-exported as a single JSON file at submit time. There is no backend; the
-clinician emails the JSON file to the study coordinator for ingestion. To add
-a backend later, replace the `exportJSON` handler in
-`src/components/Submit.tsx` with a `fetch()` to a response-collection endpoint.
-
 ## Calibration probe
 
 A rejected positive control is included as a calibration probe. Half the panel
 sees the rejection annotation; the other half sees the card without it. Arm
-assignment is deterministic by reviewer-ID hash so the coordinator can
-reproduce arm membership for analysis.
+assignment is deterministic by email hash so the coordinator can reproduce
+arm membership for analysis.
 
 ## Privacy
 
 Clinicians see only derived statistics: cohort-level distributions, published
 effect sizes, and operational definitions. No row-level participant data is
-exposed. Card-order randomisation is per-reviewer, deterministic, and stored
-client-side only.
+exposed. Card-order randomisation and calibration-arm assignment are
+deterministic on email but client-side only (the seed is never sent to the
+server). Reviewer metadata (name, email, institution) is stored alongside
+the responses; rules above prevent third parties from reading it.

@@ -82,7 +82,10 @@ export function useSession() {
 
   const startSession = useCallback(
     (reviewer: ReviewerMeta) => {
-      const seed = hashSeed(reviewer.reviewerId);
+      // Use email (lowercased) as the deterministic seed so the same person
+      // always sees the same card order and calibration-arm assignment, even
+      // if their auto-generated reviewerId differs across visits.
+      const seed = hashSeed(reviewer.email.toLowerCase());
       const order = shuffle(
         CARDS.map((c) => c.id),
         seed,
