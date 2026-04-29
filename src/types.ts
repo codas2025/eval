@@ -68,8 +68,14 @@ export interface RubricItem {
   anchors?: { value: number; label: string }[];
   literatureChoices?: { value: string; label: string; hint?: string }[];
   justificationRequired?: boolean;
+  /** Brief gray placeholder for the justification textarea. */
+  justificationPlaceholder?: string;
   followUpPrompt?: string;
   followUpRequired?: boolean;
+  /** Brief gray placeholder for the follow-up textarea. */
+  followUpPlaceholder?: string;
+  /** For freetext-only items, the placeholder shown in the textarea. */
+  freetextPlaceholder?: string;
 }
 
 export interface ReviewerMeta {

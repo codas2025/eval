@@ -5,6 +5,7 @@ import type {
   Session,
 } from "../types";
 import { CARDS } from "../data/cards";
+import { logProgress } from "../firebase";
 
 const STORAGE_PREFIX = "codas-eval-session-";
 const SCHEMA_VERSION = "1";
@@ -89,6 +90,17 @@ export function useSession() {
   useEffect(() => {
     if (!reviewerId) return;
     localStorage.setItem(STORAGE_PREFIX + reviewerId, JSON.stringify(session));
+  }, [reviewerId, session]);
+
+  // Debounced cloud auto-save: 1.5 s after the last change, push the current
+  // session state to RTDB so coordinators see in-progress reviewers, not
+  // only the ones who reach final Submit.
+  useEffect(() => {
+    if (!reviewerId || !session.reviewer) return;
+    const t = setTimeout(() => {
+      void logProgress(session);
+    }, 1500);
+    return () => clearTimeout(t);
   }, [reviewerId, session]);
 
   const startSession = useCallback(

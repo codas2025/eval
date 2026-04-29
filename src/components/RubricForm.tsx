@@ -100,7 +100,7 @@ function RubricRow({
       {item.scaleType === "literature5" && (
         <fieldset className="mt-3">
           <legend className="sr-only">Literature support choices</legend>
-          <div className="grid grid-cols-1 gap-1 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
             {item.literatureChoices!.map((c) => {
               const id = `${item.id}-${c.value}`;
               const checked = value === c.value;
@@ -108,7 +108,7 @@ function RubricRow({
                 <label
                   key={c.value}
                   htmlFor={id}
-                  className={`flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 transition ${
+                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-3 py-3 text-center transition ${
                     checked
                       ? "border-ink-900 bg-ink-900 text-white"
                       : "border-stone-200 bg-white hover:bg-stone-50"
@@ -118,18 +118,16 @@ function RubricRow({
                     id={id}
                     type="radio"
                     name={`q-${item.id}-${index}`}
-                    className="mt-0.5 h-4 w-4 accent-current"
+                    className="h-4 w-4 accent-current"
                     checked={checked}
                     onChange={() => setRating(c.value)}
                   />
-                  <span className="leading-tight">
-                    <span className="text-xs font-medium">{c.label}</span>
-                    {c.hint && (
-                      <span className={`block text-[10px] ${checked ? "opacity-70" : "text-ink-500"}`}>
-                        {c.hint}
-                      </span>
-                    )}
-                  </span>
+                  <span className="text-xs font-medium leading-tight">{c.label}</span>
+                  {c.hint && (
+                    <span className={`text-[10px] leading-tight ${checked ? "opacity-70" : "text-ink-500"}`}>
+                      {c.hint}
+                    </span>
+                  )}
                 </label>
               );
             })}
@@ -142,7 +140,7 @@ function RubricRow({
           className="textarea mt-3"
           rows={3}
           value={justification}
-          placeholder="Optional"
+          placeholder={item.freetextPlaceholder ?? "Optional"}
           onChange={(e) => setJustification(e.target.value)}
         />
       )}
@@ -157,6 +155,7 @@ function RubricRow({
             className="textarea"
             rows={2}
             value={justification}
+            placeholder={item.justificationPlaceholder ?? ""}
             onChange={(e) => setJustification(e.target.value)}
           />
         </div>
@@ -172,6 +171,7 @@ function RubricRow({
             className="textarea"
             rows={2}
             value={followUp}
+            placeholder={item.followUpPlaceholder ?? ""}
             onChange={(e) => setFollowUp(e.target.value)}
           />
         </div>

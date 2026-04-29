@@ -22,9 +22,13 @@ export const RUBRIC: RubricItem[] = [
       "Clearly real",
     ]),
     justificationRequired: true,
+    justificationPlaceholder:
+      "e.g., why you trust or doubt this signal in 1 to 2 sentences",
     followUpPrompt:
       "Most plausible alternative explanation, if any (confounding, reverse causation, measurement artifact)",
     followUpRequired: false,
+    followUpPlaceholder:
+      "e.g., depressed patients sleep more variably, not the reverse",
   },
   {
     id: "meaningfulness",
@@ -35,6 +39,8 @@ export const RUBRIC: RubricItem[] = [
     scaleType: "likert5",
     anchors: L5(["Negligible", "Small", "Modest", "Meaningful", "Large"]),
     justificationRequired: true,
+    justificationPlaceholder:
+      "e.g., compared with a 1 PHQ-8 point change from a known intervention",
   },
   {
     id: "literature",
@@ -53,6 +59,7 @@ export const RUBRIC: RubricItem[] = [
     ],
     followUpPrompt:
       "Citation(s) you would use to support or contest the claim (optional)",
+    followUpPlaceholder: "e.g., Author et al. 2024",
   },
   {
     id: "novelty",
@@ -73,6 +80,8 @@ export const RUBRIC: RubricItem[] = [
     anchors: L5(["Not feasible", "Difficult", "With effort", "Easy", "Trivial"]),
     followUpPrompt:
       "If currently infeasible, what would need to change?",
+    followUpPlaceholder:
+      "e.g., a clinical-grade wearable, or a validated cutoff",
   },
   {
     id: "added_value",
@@ -83,9 +92,12 @@ export const RUBRIC: RubricItem[] = [
     scaleType: "likert5",
     anchors: L5(["None", "Marginal", "Comparable", "Incremental", "Clear advantage"]),
     justificationRequired: true,
+    justificationPlaceholder:
+      "e.g., what new information this gives over your current workflow",
     followUpPrompt:
       "Which existing biomarker(s) does this most directly compete with or complement?",
     followUpRequired: true,
+    followUpPlaceholder: "e.g., HDL, fasting glucose, sleep history",
   },
   {
     id: "advice_influence",
@@ -103,6 +115,8 @@ export const RUBRIC: RubricItem[] = [
     ]),
     followUpPrompt:
       "If 'Likely' or 'Very likely', the most likely scenario in your practice",
+    followUpPlaceholder:
+      "e.g., screening high-risk patients during routine visits",
   },
   {
     id: "real_world_action",
@@ -114,6 +128,8 @@ export const RUBRIC: RubricItem[] = [
     anchors: L5(["Not", "Slightly", "Moderately", "Quite", "Very"]),
     followUpPrompt:
       "What additional evidence (study type, sample, follow-up) would push you to a 5?",
+    followUpPlaceholder:
+      "e.g., a multi-site prospective trial with N at least 1,000",
   },
   {
     id: "open_concerns",
@@ -122,6 +138,8 @@ export const RUBRIC: RubricItem[] = [
     prompt:
       "Additional concerns, alternative interpretations, scope conditions, or potential harms if deployed (optional)",
     scaleType: "freetext",
+    freetextPlaceholder:
+      "e.g., scope conditions, alternative interpretations, potential harms if deployed",
   },
 ];
 

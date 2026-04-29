@@ -67,6 +67,36 @@ export interface SubmissionResult {
   error?: string;
 }
 
+/** Auto-save: writes the current session state to RTDB under the email-keyed
+ *  node, with status='in_progress'. Called from a debounced effect on every
+ *  state change, and explicitly when the reviewer clicks Save and exit. */
+export async function logProgress(session: Session): Promise<SubmissionResult> {
+  try {
+    if (!session.reviewer) return { ok: false, error: "no reviewer" };
+    const database = ensure();
+    const key = emailToKey(session.reviewer.email.toLowerCase());
+    const path = `${RTDB_PATH}/${key}`;
+    const payload = {
+      schemaVersion: session.schemaVersion,
+      status: "in_progress",
+      reviewer: session.reviewer,
+      cardOrder: session.cardOrder,
+      responses: session.responses,
+      globalFeedback: session.globalFeedback,
+      lastUpdate: serverTimestamp(),
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+    };
+    console.log("[firebase] progress write to", path);
+    await set(ref(database, path), payload);
+    console.log("[firebase] progress OK:", key);
+    return { ok: true, documentId: key };
+  } catch (e) {
+    const err = e instanceof Error ? e.message : String(e);
+    console.error("[firebase] progress FAILED:", err);
+    return { ok: false, error: err };
+  }
+}
+
 /** Called from the profile form after the reviewer fills it in. Writes an
  *  in_progress checkpoint so the coordinator sees who started. */
 export async function logProfileStart(reviewer: ReviewerMeta): Promise<SubmissionResult> {

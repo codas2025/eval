@@ -1,33 +1,19 @@
-// Small inline SVG icons.
+// Small inline icons.
+
+const PDF_ICON_URL =
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/330px-PDF_file_icon.svg.png?_=20220802235851";
 
 export function PaperIcon({ size = 18 }: { size?: number }) {
-  // Stylised PDF document: red folded-corner badge with "PDF" label.
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
+    <img
+      src={PDF_ICON_URL}
+      alt="PDF"
       width={size}
       height={size}
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-      className="inline-block"
-    >
-      <path
-        d="M7 3h13l7 7v17a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z"
-        fill="#dc2626"
-      />
-      <path d="M20 3v7h7" fill="#fca5a5" opacity="0.9" />
-      <text
-        x="16"
-        y="22"
-        fontFamily="ui-sans-serif, system-ui, sans-serif"
-        fontSize="8"
-        fontWeight="800"
-        textAnchor="middle"
-        fill="white"
-      >
-        PDF
-      </text>
-    </svg>
+      loading="lazy"
+      decoding="async"
+      style={{ display: "inline-block", verticalAlign: "middle" }}
+    />
   );
 }
 

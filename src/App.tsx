@@ -8,7 +8,7 @@ import { Submit } from "./components/Submit";
 import { useSession } from "./hooks/useSession";
 import { CARDS } from "./data/cards";
 import { COHORTS } from "./data/cohorts";
-import { logProfileStart } from "./firebase";
+import { logProfileStart, logProgress } from "./firebase";
 
 type Stage = "welcome" | "reviewer" | "cards" | "submit";
 
@@ -133,9 +133,14 @@ export default function App() {
         <div className="flex items-center justify-between">
           <button
             className="btn btn-secondary"
-            onClick={() => setStage("welcome")}
+            onClick={() => {
+              // Immediate flush so the reviewer can confirm their progress
+              // landed in the cloud before they leave the tab.
+              void logProgress(session);
+              setStage("welcome");
+            }}
             type="button"
-            title="Your progress is auto-saved"
+            title="Your progress is auto-saved to the secure database"
           >
             ← Save and exit
           </button>
