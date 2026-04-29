@@ -25,7 +25,7 @@ const firebaseConfig = {
   measurementId: "G-DPD0YFJS7Z",
 };
 
-const RTDB_PATH = "clinical-eval-responses";
+const RTDB_PATH = "codas_eval_clinical_validation";
 
 export const FIREBASE_CONFIGURED = true;
 
