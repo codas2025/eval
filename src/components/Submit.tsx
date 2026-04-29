@@ -90,11 +90,11 @@ export function Submit({
         kind: "error",
         message:
           (r.error ?? "Unknown Firestore error") +
-          " — please use the JSON export below and email it to the coordinator.",
+          ". Please use the JSON export below and email it to the coordinator.",
       });
       return;
     }
-    // Firebase not configured — JSON-only path.
+    // Firebase not configured; JSON-only path.
     onFinish();
     setState({ kind: "success", documentId: "(local only)", firestore: false });
   }
@@ -122,7 +122,7 @@ export function Submit({
                     className="text-left text-rose-700 underline-offset-2 hover:underline"
                     onClick={() => onResume(id)}
                   >
-                    {id} — {card.title}
+                    {id}: {card.title}
                   </button>
                 </li>
               );
@@ -155,7 +155,7 @@ export function Submit({
         <h2>Submit</h2>
         <p className="mt-2 text-sm">
           Clicking <b>Submit</b> writes your responses to the secure study
-          database{FIREBASE_CONFIGURED ? "" : " (currently disabled in this build — see README)"}.
+          database{FIREBASE_CONFIGURED ? "" : " (currently disabled in this build; see README)"}.
           You can also download a JSON copy at any time.
         </p>
 

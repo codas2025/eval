@@ -124,7 +124,7 @@ export function CardView({
           )}
           {card.stabilityFlag && (
             <span className="pill bg-rose-50 text-rose-700 ring-1 ring-rose-200">
-              UNSTABLE — see caveats
+              UNSTABLE; see caveats
             </span>
           )}
         </div>

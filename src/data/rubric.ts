@@ -1,10 +1,10 @@
-// Rubric definitions — 7-dimension Likert + open-ended fields used by the
-// clinician panel review.
+// Rubric definitions: 7 Likert items, 1 categorical literature item, 1 free
+// text. Required items must be answered before a card counts as complete.
 
 import type { RubricItem } from "../types";
 
 const L5 = (labels: [string, string, string, string, string]) =>
-  labels.map((l, i) => ({ value: i + 1, label: `${i + 1} — ${l}` }));
+  labels.map((l, i) => ({ value: i + 1, label: l }));
 
 export const RUBRIC: RubricItem[] = [
   {
@@ -12,14 +12,14 @@ export const RUBRIC: RubricItem[] = [
     letter: "A",
     required: true,
     prompt:
-      "Validity confidence — based on the reported effect size, sample size, and validation evidence on this card, how confident are you that this association reflects a real (non-spurious) signal rather than an artifact of analysis?",
+      "How confident are you that this association reflects a real (non-spurious) signal?",
     scaleType: "likert5",
     anchors: L5([
-      "Very low (likely spurious)",
-      "Low",
-      "Neutral / unsure",
-      "High",
-      "Very high (clearly real)",
+      "Likely spurious",
+      "Doubtful",
+      "Unsure",
+      "Likely real",
+      "Clearly real",
     ]),
     justificationRequired: true,
     followUpPrompt:
@@ -31,15 +31,9 @@ export const RUBRIC: RubricItem[] = [
     letter: "B",
     required: true,
     prompt:
-      "Effect-size meaningfulness — given the real-world translation stated on the card (a 1-SD shift in input → some Δ change in outcome), how clinically meaningful is the magnitude of this association?",
+      "Given the real-world translation on the card, how clinically meaningful is this magnitude?",
     scaleType: "likert5",
-    anchors: L5([
-      "Negligible",
-      "Small / probably not meaningful",
-      "Modest",
-      "Meaningful",
-      "Large / clearly meaningful",
-    ]),
+    anchors: L5(["Negligible", "Small", "Modest", "Meaningful", "Large"]),
     justificationRequired: true,
   },
   {
@@ -47,64 +41,46 @@ export const RUBRIC: RubricItem[] = [
     letter: "C",
     required: true,
     prompt:
-      "Literature support — to the best of your knowledge, does the existing peer-reviewed literature support, contradict, or remain silent on this specific feature–endpoint association?",
+      "Does existing peer-reviewed literature support this specific feature to endpoint association?",
     scaleType: "literature5",
     literatureChoices: [
-      { value: "strong_support", label: "Strongly supported (multiple high-quality studies converge)" },
+      { value: "strong_support", label: "Strongly supported (multiple high-quality studies)" },
       { value: "support", label: "Supported (some studies converge)" },
-      { value: "mixed", label: "Mixed / inconsistent" },
+      { value: "mixed", label: "Mixed or inconsistent" },
       { value: "contradicted", label: "Contradicted" },
-      { value: "unaware", label: "Not aware of any literature on this specific association" },
+      { value: "unaware", label: "Not aware of literature on this association" },
     ],
     followUpPrompt:
-      "Citation(s) you would use to support or contest the claim (free text, optional)",
+      "Citation(s) you would use to support or contest the claim (optional)",
   },
   {
     id: "novelty",
     letter: "D",
     required: true,
     prompt:
-      "Novelty — within your specialty, how novel is this specific feature–endpoint association as a clinical signal? (Established existing markers should rate low; genuinely new constructs should rate high.)",
+      "Within your specialty, how novel is this association as a clinical signal?",
     scaleType: "likert5",
-    anchors: [
-      { value: 1, label: "1 — Already standard practice" },
-      { value: 2, label: "2 — Well-recognised" },
-      { value: 3, label: "3 — Discussed but not mainstream" },
-      { value: 4, label: "4 — Emerging" },
-      { value: 5, label: "5 — Genuinely novel" },
-    ],
+    anchors: L5(["Standard", "Recognised", "Discussed", "Emerging", "Novel"]),
   },
   {
     id: "measurability",
     letter: "E",
     required: true,
     prompt:
-      "Practical measurability of the input — how feasible is it to measure the input variable in routine clinical practice today?",
+      "How feasible is it to measure the input variable in routine clinical practice today?",
     scaleType: "likert5",
-    anchors: L5([
-      "Not feasible (research-only)",
-      "Difficult (specialised equipment / consent burden)",
-      "Feasible with effort",
-      "Easy with current tools",
-      "Trivially measurable",
-    ]),
+    anchors: L5(["Not feasible", "Difficult", "With effort", "Easy", "Trivial"]),
     followUpPrompt:
-      "If currently infeasible, what would have to change to make it feasible?",
+      "If currently infeasible, what would need to change?",
   },
   {
     id: "added_value",
     letter: "F",
     required: true,
     prompt:
-      "Added value over existing biomarkers — compared with the biomarkers and clinical signals you already use to assess this outcome, does this candidate add value (incremental information, lower cost, lower invasiveness, earlier detection)?",
+      "Compared with the biomarkers and signals you already use for this outcome, does this candidate add value?",
     scaleType: "likert5",
-    anchors: L5([
-      "No added value (redundant or worse)",
-      "Marginal",
-      "Comparable",
-      "Likely incremental",
-      "Clear advantage",
-    ]),
+    anchors: L5(["None", "Marginal", "Comparable", "Incremental", "Clear advantage"]),
     justificationRequired: true,
     followUpPrompt:
       "Which existing biomarker(s) does this most directly compete with or complement?",
@@ -115,7 +91,7 @@ export const RUBRIC: RubricItem[] = [
     letter: "G",
     required: true,
     prompt:
-      "Likelihood to influence patient advice or treatment — in the next 1–2 years, if a result like this were available for one of your patients, how likely would it be to change the advice you give them or the treatment plan you propose?",
+      "If a result like this were available for one of your patients in the next 1 to 2 years, how likely would it change the advice you give?",
     scaleType: "likert5",
     anchors: L5([
       "Very unlikely",
@@ -132,24 +108,18 @@ export const RUBRIC: RubricItem[] = [
     letter: "H",
     required: true,
     prompt:
-      "Confidence to act in a real-world setting — how confident would you be acting on this result clinically (e.g., recommending a behavioural change, ordering a follow-up test) for an individual patient at the population-typical effect size shown here?",
+      "How confident would you be acting on this result for an individual patient at the population-typical effect size shown?",
     scaleType: "likert5",
-    anchors: L5([
-      "Not confident",
-      "Slightly",
-      "Moderately",
-      "Quite",
-      "Very confident",
-    ]),
+    anchors: L5(["Not", "Slightly", "Moderately", "Quite", "Very"]),
     followUpPrompt:
-      "What additional evidence (study type, sample, follow-up) would push you from your current rating to a 5?",
+      "What additional evidence (study type, sample, follow-up) would push you to a 5?",
   },
   {
     id: "open_concerns",
     letter: "I",
     required: false,
     prompt:
-      "Additional concerns, alternative interpretations, scope conditions, or potential harms if this biomarker were deployed",
+      "Additional concerns, alternative interpretations, scope conditions, or potential harms if deployed (optional)",
     scaleType: "freetext",
   },
 ];
@@ -162,13 +132,12 @@ export const GLOBAL_FEEDBACK_PROMPTS = [
   },
   {
     id: "combine_split",
-    prompt:
-      "Any candidates that should have been combined or split?",
+    prompt: "Any candidates that should have been combined or split?",
   },
   {
     id: "outcome_appropriateness",
     prompt:
-      "Outcomes (PHQ-8, PHQ-4, HOMA-IR) — were these the right targets for the questions clinicians actually face? Suggest alternatives if not.",
+      "Were PHQ-8, PHQ-4, and HOMA-IR the right targets for the questions clinicians actually face?",
   },
   {
     id: "overall_comments",

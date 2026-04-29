@@ -3,7 +3,7 @@ import { Welcome } from "./components/Welcome";
 import { ReviewerForm } from "./components/ReviewerForm";
 import { CardView } from "./components/CardView";
 import { RubricForm } from "./components/RubricForm";
-import { ProgressBar, isCardComplete } from "./components/Progress";
+import { ProgressBar, isCardComplete, missingForCard } from "./components/Progress";
 import { Submit } from "./components/Submit";
 import { useSession } from "./hooks/useSession";
 import { CARDS } from "./data/cards";
@@ -34,9 +34,9 @@ export default function App() {
   );
   const cohort = activeCard ? COHORTS[activeCard.cohortId] : null;
 
-  // Calibration probe randomization: based on the reviewer's email hash, half
-  // the panel sees the rejection annotation, the other half does not. Using
-  // email keeps the arm stable for the same person across sessions.
+  // Calibration probe arm: half of panel sees the rejection annotation, the
+  // other half does not. Keyed on email so the same person stays on the same
+  // arm across sessions and devices.
   const showProbeAnnotation = useMemo(() => {
     if (!session.reviewer) return true;
     const key = session.reviewer.email.toLowerCase();
@@ -58,9 +58,7 @@ export default function App() {
         resumable={resumable}
         resumableSession={resumable ? session : undefined}
         onResume={() => {
-          // jump to first incomplete card if there is one, else cards[0]
-          const nextIdx =
-            order.findIndex((id) => !isCardComplete(session, id)) ?? 0;
+          const nextIdx = order.findIndex((id) => !isCardComplete(session, id));
           setActiveCardIdx(nextIdx >= 0 ? nextIdx : 0);
           setStage("cards");
         }}
@@ -110,12 +108,7 @@ export default function App() {
   }
 
   if (!activeCard || !cohort) {
-    return (
-      <Welcome
-        onStart={() => setStage("reviewer")}
-        resumable={false}
-      />
-    );
+    return <Welcome onStart={() => setStage("reviewer")} resumable={false} />;
   }
 
   const response = session.responses[activeCard.id] ?? {
@@ -124,7 +117,8 @@ export default function App() {
     justifications: {},
     followUps: {},
   };
-  const complete = isCardComplete(session, activeCard.id);
+  const missing = missingForCard(session, activeCard.id);
+  const complete = missing.length === 0;
   const isLast = activeCardIdx === order.length - 1;
 
   return (
@@ -136,7 +130,7 @@ export default function App() {
             className="btn btn-secondary"
             onClick={() => setStage("welcome")}
             type="button"
-            title="Back to start (your progress is auto-saved)"
+            title="Your progress is auto-saved"
           >
             ← Save and exit
           </button>
@@ -154,13 +148,10 @@ export default function App() {
         </div>
 
         <div className="mt-6">
-          <h2 className="text-base font-semibold tracking-tight">
-            Your evaluation
-          </h2>
+          <h2 className="text-base font-semibold tracking-tight">Your evaluation</h2>
           <p className="mt-1 text-xs text-ink-500">
-            Each rating defaults to <b>3 (neutral)</b>; please move it where
-            appropriate. Items marked ▲ require a brief justification before
-            the card counts as complete.
+            Each Likert question defaults to <b>3 (neutral)</b>. Required items are marked
+            <span className="mx-1 text-rose-600">*</span>and must be answered before the next card.
           </p>
           <div className="mt-3">
             <RubricForm
@@ -170,7 +161,20 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between">
+        {!complete && (
+          <div className="mt-6 rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+            <div className="font-medium">
+              {missing.length} required item{missing.length === 1 ? "" : "s"} not yet answered:
+            </div>
+            <ul className="mt-1 list-disc pl-5">
+              {missing.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-8 flex items-center justify-between gap-2">
           <button
             className="btn btn-secondary"
             disabled={activeCardIdx === 0}
@@ -179,21 +183,25 @@ export default function App() {
             ← Previous
           </button>
           <div className="text-xs text-ink-500">
-            {complete ? "✓ This card is complete" : "Required items remain"}
+            {complete ? "✓ Card complete" : "Required items remain"}
           </div>
           {isLast ? (
             <button
               className="btn btn-primary"
+              disabled={!complete}
               onClick={() => setStage("submit")}
+              title={complete ? "" : "Answer required items first"}
             >
               Review & submit →
             </button>
           ) : (
             <button
               className="btn btn-primary"
+              disabled={!complete}
               onClick={() =>
                 setActiveCardIdx((i) => Math.min(order.length - 1, i + 1))
               }
+              title={complete ? "" : "Answer required items first"}
             >
               Next card →
             </button>

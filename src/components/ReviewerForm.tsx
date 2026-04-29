@@ -21,6 +21,10 @@ function genReviewerId(): string {
   return `R-${t}${r}`.toUpperCase();
 }
 
+function Required() {
+  return <span className="ml-1 text-rose-600" aria-label="required">*</span>;
+}
+
 export function ReviewerForm({
   onSubmit,
   onBack,
@@ -57,11 +61,7 @@ export function ReviewerForm({
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <button
-        className="btn btn-secondary mb-4"
-        type="button"
-        onClick={onBack}
-      >
+      <button className="btn btn-secondary mb-4" type="button" onClick={onBack}>
         ← Back
       </button>
 
@@ -70,20 +70,20 @@ export function ReviewerForm({
       <div className="mt-6 card p-6 space-y-5">
         <div>
           <label className="label">
-            Full name <span className="text-rose-600">*</span>
+            Full name<Required />
           </label>
           <input
             className="input"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Jane Doe, MD"
+            placeholder="Jane Doe, MD"
             autoComplete="name"
           />
         </div>
 
         <div>
           <label className="label">
-            Email <span className="text-rose-600">*</span>
+            Email<Required />
           </label>
           <input
             className="input"
@@ -102,27 +102,27 @@ export function ReviewerForm({
 
         <div>
           <label className="label">
-            Institution <span className="text-rose-600">*</span>
+            Institution<Required />
           </label>
           <input
             className="input"
             value={institution}
             onChange={(e) => setInstitution(e.target.value)}
-            placeholder="e.g., Massachusetts General Hospital"
+            placeholder="Massachusetts General Hospital"
             autoComplete="organization"
           />
         </div>
 
         <div>
           <label className="label">
-            Expertise / primary specialty <span className="text-rose-600">*</span>
+            Primary specialty<Required />
           </label>
           <select
             className="select"
             value={expertise}
             onChange={(e) => setExpertise(e.target.value)}
           >
-            <option value="">Select expertise…</option>
+            <option value="">Select…</option>
             {EXPERTISE_AREAS.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -134,15 +134,14 @@ export function ReviewerForm({
               className="input mt-2"
               value={otherExpertise}
               onChange={(e) => setOtherExpertise(e.target.value)}
-              placeholder="Enter expertise area"
+              placeholder="Enter specialty"
             />
           )}
         </div>
 
         <div>
           <label className="label">
-            Years of expertise (post-residency, integer){" "}
-            <span className="text-rose-600">*</span>
+            Years of expertise (post residency)<Required />
           </label>
           <input
             className="input"
@@ -153,11 +152,11 @@ export function ReviewerForm({
             inputMode="numeric"
             value={yearsText}
             onChange={(e) => setYearsText(e.target.value.replace(/[^\d]/g, ""))}
-            placeholder="e.g., 8"
+            placeholder="8"
           />
           {yearsText.length > 0 && !yearsValid && (
             <div className="mt-1 text-xs text-rose-600">
-              Please enter an integer between 0 and 70.
+              Enter an integer between 0 and 70.
             </div>
           )}
         </div>
@@ -166,32 +165,39 @@ export function ReviewerForm({
           <legend className="label">
             Familiarity with wearable / digital phenotyping data
           </legend>
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-5">
+          <div className="mt-2 grid grid-cols-5 gap-1 sm:gap-2">
             {[
-              { v: 1, label: "1 — None" },
-              { v: 2, label: "2 — A little" },
-              { v: 3, label: "3 — Moderate" },
-              { v: 4, label: "4 — Substantial" },
-              { v: 5, label: "5 — Expert" },
-            ].map((opt) => (
-              <label
-                key={opt.v}
-                className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm ${
-                  familiarity === opt.v
-                    ? "border-ink-700 bg-ink-900 text-white"
-                    : "border-stone-200 bg-white text-ink-900 hover:bg-stone-50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="familiarity"
-                  className="accent-current"
-                  checked={familiarity === opt.v}
-                  onChange={() => setFamiliarity(opt.v)}
-                />
-                <span>{opt.label}</span>
-              </label>
-            ))}
+              { v: 1, label: "None" },
+              { v: 2, label: "A little" },
+              { v: 3, label: "Moderate" },
+              { v: 4, label: "Substantial" },
+              { v: 5, label: "Expert" },
+            ].map((opt) => {
+              const id = `fam-${opt.v}`;
+              const checked = familiarity === opt.v;
+              return (
+                <label
+                  key={opt.v}
+                  htmlFor={id}
+                  className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-2 py-2 text-center transition ${
+                    checked
+                      ? "border-ink-900 bg-ink-900 text-white"
+                      : "border-stone-200 bg-white hover:bg-stone-50"
+                  }`}
+                >
+                  <input
+                    id={id}
+                    type="radio"
+                    name="familiarity"
+                    className="h-4 w-4 accent-current"
+                    checked={checked}
+                    onChange={() => setFamiliarity(opt.v)}
+                  />
+                  <span className="text-xs font-semibold">{opt.v}</span>
+                  <span className="text-[10px] leading-tight">{opt.label}</span>
+                </label>
+              );
+            })}
           </div>
         </fieldset>
 
@@ -204,7 +210,7 @@ export function ReviewerForm({
             rows={2}
             value={outcomes}
             onChange={(e) => setOutcomes(e.target.value)}
-            placeholder="Free text — e.g., depression screeners (PHQ-2/PHQ-9), HbA1c / fasting glucose, BP monitoring, sleep history, etc."
+            placeholder="e.g., depression screeners, HbA1c, BP, sleep history…"
           />
         </div>
 
@@ -215,7 +221,7 @@ export function ReviewerForm({
             rows={3}
             value={conflicts}
             onChange={(e) => setConflicts(e.target.value)}
-            placeholder="Any commercial or advisory ties to wearables / digital health products / outcome instruments under review"
+            placeholder="Commercial or advisory ties relevant to wearables, digital health, or the outcomes under review"
           />
         </div>
       </div>
@@ -243,7 +249,7 @@ export function ReviewerForm({
             })
           }
         >
-          Begin reviewing →
+          Begin reviewing
         </button>
       </div>
       <p className="mt-3 text-right text-xs text-ink-500">

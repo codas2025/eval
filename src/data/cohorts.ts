@@ -188,7 +188,7 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
       { domain: "Demographics", examples: ["age", "gender", "platform (iOS / Android)", "ethnicity (one-hot)"] },
     ],
     notes:
-      "For the discovery ρ, the analysis collapses to one wave per participant to remove within-subject correlation. Cohort-level CV AUC = 0.535 (near-chance, reflects the analytical floor — clinicians should be aware).",
+      "For the discovery ρ, the analysis collapses to one wave per participant to remove within-subject correlation. Cohort-level CV AUC = 0.535 (near-chance, reflects the analytical floor; clinicians should be aware).",
   },
 
   wearme: {

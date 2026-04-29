@@ -1,4 +1,4 @@
-# CoDaS Clinician Evaluation
+# Clinical Validation
 
 A web-based annotation interface that lets a panel of clinicians review the
 biomarker candidates surfaced by the CoDaS multi-agent biomarker discovery
@@ -58,7 +58,7 @@ build automatically on every push to `main` and publishes to GitHub Pages.
 
 The Firebase web config lives in `src/firebase.ts` as plain values. Per
 [Firebase's own documentation](https://firebase.google.com/docs/projects/api-keys),
-the web `apiKey` and the rest of the web config are **not secrets** — they are
+the web `apiKey` and the rest of the web config are **not secrets**; they are
 bundled into every deployed build of the client and visible to anyone who
 inspects the page. Security for writes is enforced by the Firestore rules
 below, plus Anonymous auth.
@@ -69,7 +69,7 @@ Pointing the app at a different Firebase project is a one-line change in
 ## Firebase setup
 
 The Realtime Database for the configured project should already be set up
-from prior studies. If a write fails, check the RTDB rules — for an
+from prior studies. If a write fails, check the RTDB rules; for an
 append-only response collection, a minimal permissive rule is:
 
 ```json

@@ -49,7 +49,7 @@ export const CARDS: ResultCard[] = [
     inputUnits: "minutes",
     inputDist: { n: 7227, mean: 95.3, sd: 43.3, median: 88.7, p25: 65.4, p75: 117, min: 0.7, max: 434 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.252,
     rhoCI: [0.23, 0.27],
     rhoVerifiedFromData: 0.257,
@@ -61,7 +61,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Circadian instability impairs sleep homeostatic drive and emotional regulation.",
     caveats:
-      "Operationalization (SD vs. CV vs. IQR) is somewhat interchangeable; Appendix Table 7 shows main-sleep-duration CV (ρ=0.244) and bedtime-hour SD (ρ=0.229) carry similar signal — the underlying construct is sleep-schedule irregularity, not a particular statistic. Independently triangulated by sleep onset time variability in GLOBEM (GLOB-01).",
+      "Operationalization (SD vs. CV vs. IQR) is somewhat interchangeable; Appendix Table 7 shows main-sleep-duration CV (ρ=0.244) and bedtime-hour SD (ρ=0.229) carry similar signal; the underlying construct is sleep-schedule irregularity, not a particular statistic. Independently triangulated by sleep onset time variability in GLOBEM (GLOB-01).",
   },
   {
     id: "DWB-02",
@@ -70,11 +70,11 @@ export const CARDS: ResultCard[] = [
     title: "Nocturnal social app usage (mean)",
     manuscriptColumn: "nocturnal_social_app_mean",
     inputDefinition:
-      "Mean time per day, in minutes, spent in social-category smartphone applications during nocturnal hours (operational nocturnal window per the DWB README: midnight–05:00 local). Computed from app-usage telemetry aggregated to the participant level.",
+      "Mean time per day, in minutes, spent in social-category smartphone applications during nocturnal hours (operational nocturnal window per the DWB README: midnight-05:00 local). Computed from app-usage telemetry aggregated to the participant level.",
     inputUnits: "minutes/day",
     inputDist: { n: 7497, mean: 1.47, sd: 2.47, median: 0.52, p25: 0.07, p75: 1.78, min: 0, max: 30.5 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.246,
     rhoCI: [0.22, 0.27],
     rhoVerifiedFromData: 0.246,
@@ -99,7 +99,7 @@ export const CARDS: ResultCard[] = [
     inputUnits: "minutes/night (averaged)",
     inputDist: { n: 7495, mean: 1.94, sd: 2.76, median: 0.82, p25: 0.06, p75: 2.7, min: 0, max: 27.8 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.177,
     rhoVerifiedFromData: 0.177,
     rhoMatchesManuscript: true,
@@ -110,7 +110,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Nocturnal news / social scrolling sustains rumination and cortisol release.",
     caveats:
-      "Construct overlap with DWB-02 (nocturnal social app use) is partial — clinicians may want to know whether late-night doomscrolling adds incremental signal beyond a simpler nocturnal-social measure. Rubric item E (added value) is the right place to capture that judgment.",
+      "Construct overlap with DWB-02 (nocturnal social app use) is partial; clinicians may want to know whether late-night doomscrolling adds incremental signal beyond a simpler nocturnal-social measure. Rubric item E (added value) is the right place to capture that judgment.",
   },
   {
     id: "DWB-04",
@@ -123,7 +123,7 @@ export const CARDS: ResultCard[] = [
     inputUnits: "unitless ratio",
     inputDist: { n: 7394, mean: 0.24, sd: 0.70, median: 0.10, p25: 0.018, p75: 0.293, min: 0, max: 50 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.222,
     rhoVerifiedFromData: 0.224,
     rhoMatchesManuscript: true,
@@ -147,7 +147,7 @@ export const CARDS: ResultCard[] = [
     inputUnits: "unitless ratio",
     inputDist: { n: 7382, mean: 7.33, sd: 12.7, median: 1.83, p25: 0.38, p75: 7.19, min: 0, max: 50 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.152,
     rhoVerifiedFromData: 0.153,
     rhoMatchesManuscript: true,
@@ -156,9 +156,9 @@ export const CARDS: ResultCard[] = [
     realWorldTranslation: rwt(0.152, 12.7, "ratio units", SD_PHQ8, "PHQ-8 points", 0.38, 7.19),
     controlledFor: "None in this estimate.",
     mechanism:
-      "Two competing mechanisms are plausible. The CoDaS-generated narrative posits anhedonia (depressed individuals would have a LOWER hedonic-to-productivity ratio) — but the observed sign is positive (higher ratio → higher PHQ-8), which is more consistent with avoidance / escapism into hedonic content. Clinicians should weigh these interpretations under rubric item C (literature).",
+      "Two competing mechanisms are plausible. The CoDaS-generated narrative posits anhedonia (depressed individuals would have a LOWER hedonic-to-productivity ratio); but the observed sign is positive (higher ratio → higher PHQ-8), which is more consistent with avoidance / escapism into hedonic content. Clinicians should weigh these interpretations under rubric item C (literature).",
     caveats:
-      "Hedonic / productivity app categorization is itself a soft mapping; boundary cases (e.g., LinkedIn) may go either way. Construct validity for this composite is the key open question. Smallest effect in the DWB validated set — the meaningfulness item (B) is critical.",
+      "Hedonic / productivity app categorization is itself a soft mapping; boundary cases (e.g., LinkedIn) may go either way. Construct validity for this composite is the key open question. Smallest effect in the DWB validated set; the meaningfulness item (B) is critical.",
   },
   {
     id: "DWB-06",
@@ -168,10 +168,10 @@ export const CARDS: ResultCard[] = [
     manuscriptColumn: "polyphasic_sleep_pct",
     inputDefinition:
       "Percentage of nights, across the participant's observation window, on which the wearable detects a polyphasic sleep pattern (≥2 distinct sleep episodes separated by a wake interval, vs. a single consolidated nocturnal sleep). Derived from Fitbit / Pixel Watch sleep-stage segmentation. Reported as a proportion (0-1) rather than 0-100 percent.",
-    inputUnits: "proportion of nights (0–1)",
+    inputUnits: "proportion of nights (0-1)",
     inputDist: { n: 7353, mean: 0.145, sd: 0.162, median: 0.091, p25: 0.036, p75: 0.222, min: 0, max: 1 },
     inputDistSource: "data",
-    outputLabel: "PHQ-8 (0–24)",
+    outputLabel: "PHQ-8 (0-24)",
     rho: 0.184,
     rhoVerifiedFromData: 0.195,
     rhoMatchesManuscript: true,
@@ -196,11 +196,11 @@ export const CARDS: ResultCard[] = [
     manuscriptColumn:
       "f_slp:fitbit_sleep_summary_rapids_*onsettime*:cosinor_acrophase",
     inputDefinition:
-      "Cosinor-fit circadian acrophase of nightly sleep-onset time across the observation window — i.e., a measure of how much the participant's nightly sleep-onset clock-shifts day-to-day. Higher values indicate greater day-to-day irregularity. The cosinor feature is computed during the CoDaS pipeline run from RAPIDS-canonical sleep-onset timestamps and is not present as a static column in the consolidated CSV.",
+      "Cosinor-fit circadian acrophase of nightly sleep-onset time across the observation window; i.e., a measure of how much the participant's nightly sleep-onset clock-shifts day-to-day. Higher values indicate greater day-to-day irregularity. The cosinor feature is computed during the CoDaS pipeline run from RAPIDS-canonical sleep-onset timestamps and is not present as a static column in the consolidated CSV.",
     inputUnits: "hours (acrophase)",
     inputDist: null,
     inputDistSource: "manuscript",
-    outputLabel: "PHQ-4 (0–12)",
+    outputLabel: "PHQ-4 (0-12)",
     rho: 0.126,
     rhoMatchesManuscript: true,
     pValue: "<0.001 (BH-FDR)",
@@ -227,21 +227,21 @@ export const CARDS: ResultCard[] = [
     inputUnits: "hours (acrophase)",
     inputDist: null,
     inputDistSource: "manuscript",
-    outputLabel: "PHQ-4 (0–12)",
+    outputLabel: "PHQ-4 (0-12)",
     rho: -0.145,
     rhoMatchesManuscript: true,
     pValue: "<0.001 (BH-FDR) at discovery",
     direction:
-      "Lower evening incoming-call activity → higher PHQ-4 (DISCOVERY phase). Holdout-confirmation ρ = +0.435 — sign reversed.",
+      "Lower evening incoming-call activity → higher PHQ-4 (DISCOVERY phase). Holdout-confirmation ρ = +0.435; sign reversed.",
     stabilityFlag:
       "Sign reversal across discovery and holdout partitions. Manuscript reports the conservative discovery-phase estimate; recommend treating as UNSTABLE.",
     realWorldTranslation:
       "Discovery-phase magnitude ≈ |ρ|·SD_outcome = " +
       `${fmt(0.145 * SD_PHQ4)} PHQ-4 points per 1-SD shift. ` +
-      "However, the sign reverses between discovery and holdout — clinicians should rate the validity item (A) with full knowledge of this instability.",
+      "However, the sign reverses between discovery and holdout; clinicians should rate the validity item (A) with full knowledge of this instability.",
     controlledFor: "None in this estimate.",
     mechanism:
-      "Reduced evening social communication reflects social withdrawal — but the holdout reversal undermines the simple interpretation.",
+      "Reduced evening social communication reflects social withdrawal; but the holdout reversal undermines the simple interpretation.",
     caveats:
       "Including this card is itself diagnostic: clinicians who rate validity high without flagging the sign reversal indicate the panel needs additional briefing on caveats handling.",
   },
@@ -256,7 +256,7 @@ export const CARDS: ResultCard[] = [
     inputUnits: "count of unique APs / 7-day window",
     inputDist: null,
     inputDistSource: "manuscript",
-    outputLabel: "PHQ-4 (0–12)",
+    outputLabel: "PHQ-4 (0-12)",
     rho: 0.128,
     rhoCI: [0.10, 0.24],
     rhoMatchesManuscript: true,
@@ -268,7 +268,7 @@ export const CARDS: ResultCard[] = [
     controlledFor: "None in this estimate.",
     mechanism: "Dynamic network scanning as proxy for environmental instability.",
     caveats:
-      "This is a proxy-of-a-proxy — WiFi AP scans are a noisy mobility surrogate, and environmental instability is itself one of several psychological constructs the metric could index (housing instability, social transition, restlessness, work travel). Rubric items C (literature) and E (added value) will likely surface concerns.",
+      "This is a proxy-of-a-proxy; WiFi AP scans are a noisy mobility surrogate, and environmental instability is itself one of several psychological constructs the metric could index (housing instability, social transition, restlessness, work travel). Rubric items C (literature) and E (added value) will likely surface concerns.",
   },
 
   // ============================================================
@@ -296,7 +296,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Low HDL reflects impaired reverse cholesterol transport in metabolic syndrome.",
     caveats:
-      "Verified ρ on the static dataset is −0.380 (slight drift of 0.032 from the manuscript's −0.412 — likely reflects differences in winsorisation or participant subset between discovery and the static CSV). Construct overlap with metabolic syndrome is the key clinical-utility question (rubric item E): clinicians may rate validity high but added value low, given how routinely HDL is already used.",
+      "Verified ρ on the static dataset is −0.380 (slight drift of 0.032 from the manuscript's −0.412; likely reflects differences in winsorisation or participant subset between discovery and the static CSV). Construct overlap with metabolic syndrome is the key clinical-utility question (rubric item E): clinicians may rate validity high but added value low, given how routinely HDL is already used.",
   },
   {
     id: "WME-02",
@@ -330,7 +330,7 @@ export const CARDS: ResultCard[] = [
     title: "Derived AST/ALT ratio (De Ritis)",
     manuscriptColumn: "(derived: ast / alt)",
     inputDefinition:
-      "Ratio of fasting serum aspartate aminotransferase (AST) to alanine aminotransferase (ALT) — the De Ritis ratio. Both assays are standard hepatic liver-function tests; the ratio is a well-known hepatic indicator. CoDaS feature-engineering agents constructed this composite after the literature-grounding phase surfaced hepatic stress as a candidate insulin-resistance axis.",
+      "Ratio of fasting serum aspartate aminotransferase (AST) to alanine aminotransferase (ALT); the De Ritis ratio. Both assays are standard hepatic liver-function tests; the ratio is a well-known hepatic indicator. CoDaS feature-engineering agents constructed this composite after the literature-grounding phase surfaced hepatic stress as a candidate insulin-resistance axis.",
     inputUnits: "unitless ratio",
     inputDist: { n: 1078, mean: 1.08, sd: 0.381, median: 1.04, p25: 0.83, p75: 1.25, min: 0.40, max: 5 },
     inputDistSource: "data",
@@ -346,13 +346,13 @@ export const CARDS: ResultCard[] = [
       "Hepatic gluconeogenic stress and subclinical steatosis marker. Low De Ritis (high ALT relative to AST) is classically associated with hepatocellular injury and fatty liver, both of which precede / co-occur with insulin resistance.",
     composite: { formula: "ast / alt" },
     caveats:
-      "While the De Ritis ratio is an established hepatic marker, its specific operationalization as a composite biomarker for insulin resistance from a population-screening cohort is not commonly reported — hence Emerging tier. Clinicians may have strong literature priors here.",
+      "While the De Ritis ratio is an established hepatic marker, its specific operationalization as a composite biomarker for insulin resistance from a population-screening cohort is not commonly reported; hence Emerging tier. Clinicians may have strong literature priors here.",
   },
   {
     id: "WME-04",
     cohortId: "wearme",
     evidenceTier: "Established",
-    title: "Resting heart rate (mean) — wearable",
+    title: "Resting heart rate (mean); wearable",
     manuscriptColumn: "Resting Heart Rate (mean)",
     inputDefinition:
       "Mean resting heart rate (bpm) measured by wrist-worn Fitbit / Pixel Watch over the observation window. The wearable's resting-HR estimate uses non-active periods including sleep. Noninvasive, consumer-grade telemetry.",
@@ -370,16 +370,16 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Autonomic imbalance: sympathetic overdrive increases hepatic glucose output.",
     caveats:
-      "Wearable resting-HR estimates have ±2–4 bpm noise vs. clinical telemetry. RHR is heavily influenced by fitness, age, and medications (β-blockers); cohort exclusion criteria for β-blocker users should be confirmed. NOTE: Appendix Table 8 lists median RHR (ρ=0.347, validated 11/11) and mean RHR (ρ=0.348, conditionally validated). The manuscript Table 3 reports the mean.",
+      "Wearable resting-HR estimates have ±2-4 bpm noise vs. clinical telemetry. RHR is heavily influenced by fitness, age, and medications (β-blockers); cohort exclusion criteria for β-blocker users should be confirmed. NOTE: Appendix Table 8 lists median RHR (ρ=0.347, validated 11/11) and mean RHR (ρ=0.348, conditionally validated). The manuscript Table 3 reports the mean.",
   },
   {
     id: "WME-05",
     cohortId: "wearme",
     evidenceTier: "Supported",
-    title: "Cardiovascular fitness index (steps / RHR) — wearable",
+    title: "Cardiovascular fitness index (steps / RHR); wearable",
     manuscriptColumn: "(derived: STEPS (mean) / Resting Heart Rate (mean))",
     inputDefinition:
-      "CoDaS-engineered composite: daily steps divided by resting heart rate, both measured from the wrist-worn wearable, averaged over the observation window. Higher values indicate greater daily activity at lower resting cardiac demand — a noninvasive proxy for cardiorespiratory fitness. Construction rationale: the CoDaS hypothesis-generator retrieved evidence linking cardiorespiratory fitness to peripheral glucose disposal.",
+      "CoDaS-engineered composite: daily steps divided by resting heart rate, both measured from the wrist-worn wearable, averaged over the observation window. Higher values indicate greater daily activity at lower resting cardiac demand; a noninvasive proxy for cardiorespiratory fitness. Construction rationale: the CoDaS hypothesis-generator retrieved evidence linking cardiorespiratory fitness to peripheral glucose disposal.",
     inputUnits: "steps / bpm (per day)",
     inputDist: { n: 1078, mean: 121, sd: 62.7, median: 109, p25: 79, p75: 147, min: 10.8, max: 664 },
     inputDistSource: "data",
@@ -396,7 +396,7 @@ export const CARDS: ResultCard[] = [
       "Peripheral glucose disposal efficiency driven by skeletal-muscle mitochondrial density.",
     composite: { formula: "STEPS (mean) / Resting Heart Rate (mean)" },
     caveats:
-      "The composite is intentionally normalized — it controls for between-person differences in baseline step counts (a fit person walking 6,000 steps with HR 55 may be metabolically healthier than someone walking 10,000 with HR 80). The manuscript highlights this as the most clinically translatable wearable-derived candidate from WEAR-ME. ANCHOR for Mattia's real-world translational-relevance criterion.",
+      "The composite is intentionally normalized; it controls for between-person differences in baseline step counts (a fit person walking 6,000 steps with HR 55 may be metabolically healthier than someone walking 10,000 with HR 80). The manuscript highlights this as the most clinically translatable wearable-derived candidate from WEAR-ME. ANCHOR for Mattia's real-world translational-relevance criterion.",
   },
   {
     id: "WME-06",
@@ -405,7 +405,7 @@ export const CARDS: ResultCard[] = [
     title: "Red cell distribution width (RDW)",
     manuscriptColumn: "rdw",
     inputDefinition:
-      "Red cell distribution width — the % coefficient of variation in erythrocyte volume — from a standard CBC panel (typical normal range ~11.5–14.5%).",
+      "Red cell distribution width; the % coefficient of variation in erythrocyte volume; from a standard CBC panel (typical normal range ~11.5-14.5%).",
     inputUnits: "%",
     inputDist: { n: 1077, mean: 12.9, sd: 1.0, median: 12.7, p25: 12.3, p75: 13.2, min: 10.7, max: 20.7 },
     inputDistSource: "data",
@@ -420,7 +420,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Erythropoietic stress as a marker of chronic low-grade metabolic inflammation.",
     caveats:
-      "IMPORTANT: the source WEAR-ME paper (Metwally et al., 2026) reported that standard CBC analytes 'did not differ significantly in their effect size between the IR and IS groups' in a categorical group-comparison analysis. CoDaS's continuous Spearman ρ on N=1,078 surfaces a signal that the categorical test missed. This discrepancy is a feature, not a bug — but clinicians should be told about it explicitly so they can decide whether the continuous association is clinically meaningful or an artifact of statistical power. The narrow IQR (12.3–13.2%) means absolute movements look small in native units even though the standardized effect is moderate.",
+      "IMPORTANT: the source WEAR-ME paper (Metwally et al., 2026) reported that standard CBC analytes 'did not differ significantly in their effect size between the IR and IS groups' in a categorical group-comparison analysis. CoDaS's continuous Spearman ρ on N=1,078 surfaces a signal that the categorical test missed. This discrepancy is a feature, not a bug; but clinicians should be told about it explicitly so they can decide whether the continuous association is clinically meaningful or an artifact of statistical power. The narrow IQR (12.3-13.2%) means absolute movements look small in native units even though the standardized effect is moderate.",
   },
   {
     id: "WME-07",
@@ -444,7 +444,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Hepatic synthetic dysfunction (low albumin) and subclinical inflammatory protein shift (high globulin).",
     caveats:
-      "Underlying components are well-known clinical markers, but the ratio as a population-screening proxy for insulin resistance is not commonly reported. Smallest effect in the cohort's validated set — rubric item B (effect-size meaningfulness) is the critical judgment.",
+      "Underlying components are well-known clinical markers, but the ratio as a population-screening proxy for insulin resistance is not commonly reported. Smallest effect in the cohort's validated set; rubric item B (effect-size meaningfulness) is the critical judgment.",
   },
 
   // ============================================================
@@ -454,7 +454,7 @@ export const CARDS: ResultCard[] = [
     id: "WME-PC",
     cohortId: "wearme",
     evidenceTier: "Rejected",
-    title: "Derived TG/HDL ratio (REJECTED — calibration probe)",
+    title: "Derived TG/HDL ratio (REJECTED; calibration probe)",
     manuscriptColumn: "(derived: triglycerides / hdl)",
     inputDefinition:
       "Ratio of fasting serum triglycerides to fasting serum HDL cholesterol. CoDaS feature-engineering agent constructed this composite; the Critic agent's construct-independence gate rejected it because both components are direct, definitional components of metabolic syndrome and exhibit near-tautological correlation with HOMA-IR.",
@@ -472,7 +472,7 @@ export const CARDS: ResultCard[] = [
     mechanism: "Atherogenic dyslipidemia indexes hepatic insulin resistance.",
     composite: { formula: "triglycerides / hdl" },
     caveats:
-      "Rejected by CoDaS's construct-independence gate — included as a calibration probe. Half the panel sees this card without the rejection annotation; clinicians who rate validity high AND added value high (without flagging the construct overlap) signal that the panel needs more briefing. Clinicians who flag it pass calibration. The other half sees it explicitly labelled as rejected so we can compare arms.",
+      "Rejected by CoDaS's construct-independence gate; included as a calibration probe. Half the panel sees this card without the rejection annotation; clinicians who rate validity high AND added value high (without flagging the construct overlap) signal that the panel needs more briefing. Clinicians who flag it pass calibration. The other half sees it explicitly labelled as rejected so we can compare arms.",
     isCalibrationProbe: true,
   },
 ];

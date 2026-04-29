@@ -1,7 +1,7 @@
 // Firebase initialisation and submission helper.
 //
 // Uses Firebase Realtime Database (RTDB), matching the databaseURL in the
-// project config below. No sign-in required — writes go directly to RTDB
+// project config below. No sign-in required; writes go directly to RTDB
 // using the project's existing rules.
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
