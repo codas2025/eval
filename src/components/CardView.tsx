@@ -165,14 +165,13 @@ export function CardView({
 
         {card.isCalibrationProbe && showProbeAnnotation && (
           <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
-            <div className="font-medium">⚠ Calibration probe (study methodology)</div>
+            <div className="font-medium">Rejected by CoDaS</div>
             <p className="mt-1 text-xs leading-relaxed">
-              This row was REJECTED by CoDaS's construct-independence gate.
-              Triglycerides and HDL are direct definitional components of
-              metabolic syndrome and the ratio exhibits a near-tautological
-              correlation with HOMA-IR. It is shown here to demonstrate the
-              pipeline's leakage-detection. Please rate it as you would any
-              other candidate.
+              This candidate was rejected by CoDaS's construct-independence
+              gate. Triglycerides and HDL are direct components of metabolic
+              syndrome and the ratio is near-tautologically correlated with
+              HOMA-IR. It is included for transparency. Rate it as you would
+              any other candidate.
             </p>
           </div>
         )}

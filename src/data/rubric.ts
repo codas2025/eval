@@ -41,14 +41,15 @@ export const RUBRIC: RubricItem[] = [
     letter: "C",
     required: true,
     prompt:
-      "What does existing peer-reviewed literature say about this specific feature to endpoint association? If the candidate appears genuinely novel and you would not expect prior literature, pick the last option.",
+      "What does existing peer-reviewed literature say about this specific feature to endpoint association?",
     scaleType: "literature5",
     literatureChoices: [
       { value: "strong_support", label: "Strongly supported (multiple high-quality studies)" },
       { value: "support", label: "Supported (some studies converge)" },
       { value: "mixed", label: "Mixed or inconsistent" },
       { value: "contradicted", label: "Contradicted" },
-      { value: "novel_or_unaware", label: "No prior literature comes to mind (novel candidate, or outside my reading)" },
+      { value: "novel", label: "Appears genuinely novel — no prior literature on this specific association" },
+      { value: "outside_reading", label: "Outside my reading area — I cannot say" },
     ],
     followUpPrompt:
       "Citation(s) you would use to support or contest the claim (optional)",

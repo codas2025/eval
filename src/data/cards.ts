@@ -25,59 +25,37 @@ function fmt(x: number, d = 2): string {
   return Math.abs(x) >= 100 ? x.toFixed(0) : x.toFixed(d);
 }
 
-/** Plain-language translation of a Spearman ρ into native outcome units,
- *  using the cohort's IQR (25th to 75th percentile) movement as the
- *  reference span. Avoids formula notation. For ratio-valued inputs, an
- *  optional interpretation explains what the P25 / P75 ratio actually means
- *  in clinical terms. */
+/** One-sentence clinical translation of a Spearman ρ. Each card supplies a
+ *  human description of the low-end participant (around the 25th percentile)
+ *  and the high-end participant (around the 75th percentile); we plug in the
+ *  outcome magnitude and direction. No formula notation, no second sentence.
+ */
 function rwt(args: {
   rho: number;
   inputSD: number;
-  inputUnit: string;
   inputP25: number;
   inputP75: number;
   outcomeSD: number;
   outcomeName: string;
   outcomeUnit: string;
-  /** Optional clinical interpretation of the P25 and P75 input values.
-   *  e.g., for night-to-day social ratio: "nocturnal use is ~2% of daytime use" */
-  interp?: { p25: string; p75: string };
-  perNightMultiplier?: number;
-  perNightWindow?: string;
+  /** Clinical description of a low-end participant (around the 25th
+   *  percentile of the input). e.g., "very low nighttime social-app use
+   *  (around 2% of daytime use)" */
+  lowEnd: string;
+  /** Clinical description of a high-end participant (around the 75th
+   *  percentile of the input). e.g., "substantial nighttime use (around
+   *  29% of daytime use)" */
+  highEnd: string;
 }): string {
   const {
-    rho, inputSD, inputUnit, inputP25, inputP75,
-    outcomeSD, outcomeName, outcomeUnit, interp,
-    perNightMultiplier, perNightWindow,
+    rho, inputSD, inputP25, inputP75,
+    outcomeSD, outcomeName, outcomeUnit,
+    lowEnd, highEnd,
   } = args;
   const direction = rho >= 0 ? "higher" : "lower";
-  const sdDelta = Math.abs(rho) * outcomeSD;
   const iqrSpan = inputP75 - inputP25;
-  const iqrDelta = (iqrSpan / inputSD) * sdDelta;
-
-  const p25text = interp
-    ? `${fmt(inputP25)} ${inputUnit} (${interp.p25})`
-    : `${fmt(inputP25)} ${inputUnit}`;
-  const p75text = interp
-    ? `${fmt(inputP75)} ${inputUnit} (${interp.p75})`
-    : `${fmt(inputP75)} ${inputUnit}`;
-
-  const main =
-    `Across the cohort's typical range (25th percentile = ${p25text}, 75th percentile = ${p75text}), ` +
-    `${outcomeName} is about ${fmt(iqrDelta)} ${outcomeUnit} ${direction} on average.`;
-
-  const sd =
-    ` A 1 standard deviation increase in the input (≈ ${fmt(inputSD)} ${inputUnit}) ` +
-    `is associated with about ${fmt(sdDelta)} ${outcomeUnit} ${direction} ${outcomeName}.`;
-
-  let perNight = "";
-  if (perNightMultiplier && perNightWindow) {
-    const p25Night = inputP25 * perNightMultiplier;
-    const p75Night = inputP75 * perNightMultiplier;
-    perNight =
-      ` Per night across the ${perNightWindow}: about ${fmt(p25Night)} to ${fmt(p75Night)} minutes per night.`;
-  }
-  return main + sd + perNight;
+  const iqrDelta = (iqrSpan / inputSD) * Math.abs(rho) * outcomeSD;
+  return `Going from ${lowEnd} to ${highEnd} is associated with ${outcomeName} about ${fmt(iqrDelta, 1)} ${outcomeUnit} ${direction} on average.`;
 }
 
 export const CARDS: ResultCard[] = [
@@ -103,9 +81,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More variable nightly sleep is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.252, inputSD: 43.3, inputUnit: "min",
+      rho: 0.252, inputSD: 43.3,
       inputP25: 65.4, inputP75: 117,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
+      lowEnd: "fairly steady sleep timing (about 65 min night-to-night swing, 25th percentile)",
+      highEnd: "highly variable sleep (about 117 min swing, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates; this is a raw rank correlation. CoDaS separately required the association to hold consistently across sex and age decades during its validation gauntlet.",
@@ -133,10 +113,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More nocturnal social-app use is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.246, inputSD: 2.47, inputUnit: "min/hour",
+      rho: 0.246, inputSD: 2.47,
       inputP25: 0.07, inputP75: 1.78,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
-      perNightMultiplier: 5, perNightWindow: "5 nocturnal hours",
+      lowEnd: "minimal nighttime social-app use (about 20 seconds total per night across midnight to 5 am, 25th percentile)",
+      highEnd: "substantial use (about 9 minutes total per night, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -163,10 +144,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More late-night doomscrolling is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.177, inputSD: 2.76, inputUnit: "min/hour",
+      rho: 0.177, inputSD: 2.76,
       inputP25: 0.06, inputP75: 2.7,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
-      perNightMultiplier: 5, perNightWindow: "5 late-night hours",
+      lowEnd: "minimal late-night news/social use (under 1 minute total per night across 10 pm to 3 am, 25th percentile)",
+      highEnd: "substantial late-night use (about 13 minutes total per night, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -193,13 +175,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher night-to-day ratio is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.222, inputSD: 0.70, inputUnit: "ratio",
+      rho: 0.222, inputSD: 0.70,
       inputP25: 0.018, inputP75: 0.293,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
-      interp: {
-        p25: "nocturnal social use is roughly 2% of daytime social use",
-        p75: "nocturnal social use is roughly 29% of daytime social use",
-      },
+      lowEnd: "very low nighttime social-app use (around 2% of daytime use, 25th percentile)",
+      highEnd: "substantial nighttime use (around 29% of daytime use, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -226,13 +206,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher hedonic-to-productivity ratio is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.152, inputSD: 12.7, inputUnit: "ratio",
+      rho: 0.152, inputSD: 12.7,
       inputP25: 0.38, inputP75: 7.19,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
-      interp: {
-        p25: "hedonic time is roughly 40% of productivity time (productivity-leaning user)",
-        p75: "hedonic time is roughly 7x productivity time (strongly hedonic-leaning user)",
-      },
+      lowEnd: "a productivity-leaning user (hedonic time is roughly 40% of productivity time, 25th percentile)",
+      highEnd: "a strongly hedonic-leaning user (hedonic time is roughly 7x productivity time, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -259,9 +237,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More polyphasic days is associated with higher PHQ-8.",
     realWorldTranslation: rwt({
-      rho: 0.184, inputSD: 0.162, inputUnit: "proportion",
+      rho: 0.184, inputSD: 0.162,
       inputP25: 0.036, inputP75: 0.222,
       outcomeSD: SD_PHQ8, outcomeName: "PHQ-8", outcomeUnit: "points",
+      lowEnd: "rarely polyphasic sleep (about 4% of nights have multiple sleep episodes, 25th percentile)",
+      highEnd: "frequently polyphasic (about 22% of nights, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -292,7 +272,7 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More variable sleep onset is associated with higher PHQ-4.",
     realWorldTranslation:
-      `Standardised effect: a 1 standard deviation increase in sleep-onset variability is associated with about ${fmt(0.126 * SD_PHQ4)} PHQ-4 points higher. Native-unit translation requires the cohort SD of the cosinor acrophase, which is not retained in the static CSV.`,
+      `Patients with more variable sleep-onset timing have PHQ-4 about ${fmt(0.126 * SD_PHQ4, 1)} points higher on average, per one cohort standard deviation of the variability metric. Native-unit translation is not available because this cosinor feature is computed at pipeline runtime, not stored in the static dataset.`,
     controlledFor:
       "Not adjusted for any covariates. The discovery analysis used one wave per participant to avoid within-subject correlation.",
     mechanism:
@@ -321,7 +301,7 @@ export const CARDS: ResultCard[] = [
     stabilityFlag:
       "Sign reversal across discovery and holdout partitions; treat this candidate as UNSTABLE. The manuscript reports the conservative discovery-phase estimate.",
     realWorldTranslation:
-      `Discovery-phase magnitude: a 1 standard deviation shift in the input is associated with about ${fmt(0.145 * SD_PHQ4)} PHQ-4 points. Note: the holdout partition reverses the sign, so do NOT interpret the magnitude directionally without flagging the instability under Question 1 (validity).`,
+      `At discovery, patients with lower evening incoming-call activity had PHQ-4 about ${fmt(0.145 * SD_PHQ4, 1)} points higher per one cohort standard deviation of the input. The holdout partition reverses the sign, so do NOT interpret this directionally without flagging the instability under Question 1 (validity).`,
     controlledFor:
       "Not adjusted for any covariates.",
     mechanism:
@@ -348,7 +328,7 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "More WiFi-AP diversity is associated with higher PHQ-4.",
     realWorldTranslation:
-      `Standardised effect: a 1 standard deviation increase in WiFi-AP diversity is associated with about ${fmt(0.128 * SD_PHQ4)} PHQ-4 points higher. Native-unit translation requires the cohort SD of the underlying feature, which is not retained in the static CSV.`,
+      `Patients with more diverse WiFi-AP exposure have PHQ-4 about ${fmt(0.128 * SD_PHQ4, 1)} points higher on average, per one cohort standard deviation of the input. Native-unit translation is not available because the manuscript feature is computed at pipeline runtime, not stored in the static dataset.`,
     controlledFor:
       "Not adjusted for any covariates.",
     mechanism:
@@ -378,9 +358,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Lower HDL is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.412, inputSD: 15.3, inputUnit: "mg/dL",
+      rho: -0.412, inputSD: 15.3,
       inputP25: 47, inputP75: 67,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      lowEnd: "lower HDL (47 mg/dL, 25th percentile)",
+      highEnd: "higher HDL (67 mg/dL, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -408,9 +390,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher CRP is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: 0.393, inputSD: 3.05, inputUnit: "mg/L",
+      rho: 0.393, inputSD: 3.05,
       inputP25: 0.6, inputP75: 3.5,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      lowEnd: "low CRP (0.6 mg/L, 25th percentile)",
+      highEnd: "elevated CRP (3.5 mg/L, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -437,13 +421,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Lower AST/ALT (i.e., relatively higher ALT) is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.375, inputSD: 0.381, inputUnit: "ratio",
+      rho: -0.375, inputSD: 0.381,
       inputP25: 0.83, inputP75: 1.25,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
-      interp: {
-        p25: "AST is about 83% of ALT, the pattern classically seen in NAFLD and insulin resistance",
-        p75: "AST and ALT are roughly equal, slightly favouring AST",
-      },
+      lowEnd: "an AST-low/ALT-high pattern (AST about 83% of ALT, classically seen in NAFLD and insulin resistance, 25th percentile)",
+      highEnd: "an AST-equal-or-slightly-higher pattern (75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -471,9 +453,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher resting HR is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: 0.348, inputSD: 8.12, inputUnit: "bpm",
+      rho: 0.348, inputSD: 8.12,
       inputP25: 61.6, inputP75: 72.1,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      lowEnd: "a lower resting heart rate (about 62 bpm, 25th percentile)",
+      highEnd: "a higher resting HR (about 72 bpm, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -501,13 +485,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher fitness index is associated with lower HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.374, inputSD: 62.7, inputUnit: "steps/bpm/day",
+      rho: -0.374, inputSD: 62.7,
       inputP25: 79, inputP75: 147,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
-      interp: {
-        p25: "lower fitness profile, e.g., ~6,000 steps/day at resting HR ~75 bpm",
-        p75: "higher fitness profile, e.g., ~10,000 steps/day at resting HR ~70 bpm",
-      },
+      lowEnd: "a lower-fitness profile (about 6,000 daily steps at resting HR around 75 bpm, 25th percentile)",
+      highEnd: "a higher-fitness profile (about 10,000 daily steps at resting HR around 70 bpm, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -535,9 +517,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher RDW is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: 0.281, inputSD: 1.0, inputUnit: "% RDW",
+      rho: 0.281, inputSD: 1.0,
       inputP25: 12.3, inputP75: 13.2,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
+      lowEnd: "typical RDW (12.3%, 25th percentile)",
+      highEnd: "slightly elevated RDW (13.2%, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -564,13 +548,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Lower albumin/globulin ratio is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: -0.220, inputSD: 0.277, inputUnit: "ratio",
+      rho: -0.220, inputSD: 0.277,
       inputP25: 1.6, inputP75: 1.9,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
-      interp: {
-        p25: "lower albumin/globulin (suggestive of hepatic synthetic stress or inflammation)",
-        p75: "near-normal-to-healthy albumin/globulin",
-      },
+      lowEnd: "a lower albumin/globulin ratio (1.6, suggestive of hepatic synthetic stress or inflammation, 25th percentile)",
+      highEnd: "a near-normal-to-healthy ratio (1.9, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -601,13 +583,11 @@ export const CARDS: ResultCard[] = [
     pValue: "<0.001 (BH-FDR)",
     direction: "Higher TG/HDL is associated with higher HOMA-IR.",
     realWorldTranslation: rwt({
-      rho: 0.562, inputSD: 1.43, inputUnit: "ratio",
+      rho: 0.562, inputSD: 1.43,
       inputP25: 1.04, inputP75: 2.44,
       outcomeSD: SD_HOMA, outcomeName: "HOMA-IR", outcomeUnit: "units",
-      interp: {
-        p25: "low cardiometabolic risk pattern (TG ≈ HDL)",
-        p75: "elevated cardiometabolic risk pattern (TG roughly 2.4x HDL)",
-      },
+      lowEnd: "a low cardiometabolic-risk lipid pattern (TG roughly equal to HDL, 25th percentile)",
+      highEnd: "an elevated-risk pattern (TG roughly 2.4x HDL, 75th percentile)",
     }),
     controlledFor:
       "Not adjusted for any covariates.",
@@ -615,7 +595,7 @@ export const CARDS: ResultCard[] = [
     mechanism:
       "Atherogenic dyslipidemia indexes hepatic insulin resistance (manuscript Table 3).",
     caveats:
-      "Calibration probe: this candidate was REJECTED by CoDaS's construct-independence gate. Half the panel sees this annotation; the other half sees the card without the rejection note. A clinician who rates validity AND added value high (without flagging the construct overlap) signals that the panel needs more briefing; a clinician who flags it independently passes the calibration check. Rate this as you would any other candidate.",
+      "This candidate was REJECTED by CoDaS's construct-independence gate. Triglycerides and HDL are direct definitional components of metabolic syndrome and the ratio is near-tautologically correlated with HOMA-IR. It is included in the review for transparency to demonstrate the pipeline's leakage detection. Rate it as you would any other candidate.",
     isCalibrationProbe: true,
   },
 ];
