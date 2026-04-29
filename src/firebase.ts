@@ -1,13 +1,11 @@
-// Firebase initialization and submission helper.
+// Firebase initialisation and submission helper.
 //
-// Configuration is supplied at build time via Vite env vars (VITE_FIREBASE_*).
-// The web client config (apiKey, authDomain, projectId, etc.) is not a secret
-// — security is enforced by Firestore rules. The required rules for this app
-// are documented in README.md.
-//
-// If env vars are missing the helpers degrade to a no-op so the JSON-export
-// path still works. This keeps `npm run dev` usable for local UI work without
-// any Firebase setup.
+// The Firebase web client config below is intentionally checked in: per
+// Firebase's own documentation, the web apiKey/projectId/etc. are not
+// secrets — they are bundled into the published JS and visible to every
+// site visitor in DevTools regardless. Security for Firestore writes is
+// enforced by Firestore rules (see README) and by Anonymous auth, which
+// requires authenticated UIDs and validates document shape on every write.
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
@@ -24,31 +22,28 @@ import {
 } from "firebase/firestore";
 import type { Session } from "./types";
 
-const env = import.meta.env;
-
 const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY as string | undefined,
-  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
-  projectId: env.VITE_FIREBASE_PROJECT_ID as string | undefined,
-  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET as string | undefined,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID as string | undefined,
-  appId: env.VITE_FIREBASE_APP_ID as string | undefined,
+  apiKey: "AIzaSyBIorDH--HXJolxqx0NdF8MWO0wmO0_a4A",
+  authDomain: "ivory-plane-406700.firebaseapp.com",
+  databaseURL: "https://ivory-plane-406700-default-rtdb.firebaseio.com",
+  projectId: "ivory-plane-406700",
+  storageBucket: "ivory-plane-406700.firebasestorage.app",
+  messagingSenderId: "360125182471",
+  appId: "1:360125182471:web:3632af1a1b8c947a6530a2",
+  measurementId: "G-DPD0YFJS7Z",
 };
 
-const COLLECTION = (env.VITE_FIREBASE_COLLECTION as string | undefined) ?? "clinical-eval-responses";
+const COLLECTION = "clinical-eval-responses";
 
-export const FIREBASE_CONFIGURED = Boolean(
-  firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId,
-);
+export const FIREBASE_CONFIGURED = true;
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
 let auth: Auth | null = null;
 
-function ensure(): { db: Firestore; auth: Auth } | null {
-  if (!FIREBASE_CONFIGURED) return null;
+function ensure(): { db: Firestore; auth: Auth } {
   if (!app) {
-    app = initializeApp(firebaseConfig as Required<typeof firebaseConfig>);
+    app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
   }
@@ -62,15 +57,12 @@ export interface SubmissionResult {
 }
 
 export async function submitToFirestore(session: Session): Promise<SubmissionResult> {
-  const handles = ensure();
-  if (!handles) {
-    return { ok: false, error: "firebase not configured" };
-  }
   try {
-    if (!handles.auth.currentUser) {
-      await signInAnonymously(handles.auth);
+    const { db, auth } = ensure();
+    if (!auth.currentUser) {
+      await signInAnonymously(auth);
     }
-    const ref = await addDoc(collection(handles.db, COLLECTION), {
+    const ref = await addDoc(collection(db, COLLECTION), {
       schemaVersion: session.schemaVersion,
       reviewer: session.reviewer,
       cardOrder: session.cardOrder,
@@ -79,7 +71,7 @@ export async function submitToFirestore(session: Session): Promise<SubmissionRes
       submittedAt: serverTimestamp(),
       clientFinishedAt: session.finishedAt ?? new Date().toISOString(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-      anonAuthUid: handles.auth.currentUser?.uid ?? null,
+      anonAuthUid: auth.currentUser?.uid ?? null,
     });
     return { ok: true, documentId: ref.id };
   } catch (e) {

@@ -37,7 +37,6 @@ to a no-op and the JSON download is the only submission path.
 
 ```bash
 npm install
-cp .env.example .env.local        # then fill in your Firebase web config
 npm run dev                       # http://localhost:5173
 ```
 
@@ -58,24 +57,17 @@ VITE_BASE='/eval/' npm run build
 A GitHub Actions workflow at `.github/workflows/deploy.yml` performs this
 build automatically on every push to `main` and publishes to GitHub Pages.
 
-### GitHub Actions secrets required
+### Firebase config
 
-For the deployed site to write to Firestore, the following repository secrets
-must be set under Settings → Secrets and variables → Actions:
+The Firebase web config lives in `src/firebase.ts` as plain values. Per
+[Firebase's own documentation](https://firebase.google.com/docs/projects/api-keys),
+the web `apiKey` and the rest of the web config are **not secrets** — they are
+bundled into every deployed build of the client and visible to anyone who
+inspects the page. Security for writes is enforced by the Firestore rules
+below, plus Anonymous auth.
 
-| Secret                                | Source                                 |
-|---------------------------------------|----------------------------------------|
-| `VITE_FIREBASE_API_KEY`               | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_AUTH_DOMAIN`           | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_PROJECT_ID`            | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_STORAGE_BUCKET`        | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID`   | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_APP_ID`                | Firebase Console → Project Settings    |
-| `VITE_FIREBASE_COLLECTION` (optional) | Default `clinical-eval-responses`      |
-
-The web client config (apiKey etc.) is not a secret per Firebase's own docs —
-security is enforced by Firestore rules below. We still keep them in Actions
-secrets so the public repo and the build logs don't carry the literal values.
+Pointing the app at a different Firebase project is a one-line change in
+`src/firebase.ts`. No GitHub Actions secrets are involved.
 
 ## Firebase setup (one-time)
 
@@ -117,7 +109,7 @@ secrets so the public repo and the build logs don't carry the literal values.
 ```
 .
 ├── index.html, vite.config.ts, tsconfig*.json,
-│   tailwind.config.js, postcss.config.js, package.json, .env.example
+│   tailwind.config.js, postcss.config.js, package.json
 └── src/
     ├── main.tsx, App.tsx, index.css, types.ts, firebase.ts
     ├── data/
