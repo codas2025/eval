@@ -10,6 +10,18 @@ function pillClass(t: ResultCard["evidenceTier"]) {
   }
 }
 
+// Tier definitions verbatim from the manuscript Table 3 footnote.
+const TIER_TOOLTIP: Record<ResultCard["evidenceTier"], string> = {
+  Established:
+    "Validates known clinical associations with substantial literature support.",
+  Supported:
+    "The underlying physiological axis is established, but this specific operationalization from wearable or digital phenotyping data is new.",
+  Emerging:
+    "Limited prior evidence for this specific feature-to-endpoint association within the searched literature corpus; requires independent replication.",
+  Rejected:
+    "Rejected by CoDaS's construct-independence test (the candidate is too tightly coupled to the target outcome to count as an independent biomarker).",
+};
+
 function fmtRho(r: number) {
   return `${r >= 0 ? "+" : ""}${r.toFixed(3)}`;
 }
@@ -112,7 +124,14 @@ export function CardView({
       <div className="card p-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-xs text-ink-500">{card.id}</span>
-          <span className={pillClass(card.evidenceTier)}>
+          <span
+            className={`${pillClass(card.evidenceTier)} cursor-help`}
+            title={
+              card.evidenceTier === "Rejected" && !showProbeAnnotation
+                ? TIER_TOOLTIP.Established
+                : TIER_TOOLTIP[card.evidenceTier]
+            }
+          >
             {card.evidenceTier === "Rejected" && !showProbeAnnotation
               ? "Established"
               : card.evidenceTier}

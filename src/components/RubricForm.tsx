@@ -76,7 +76,7 @@ function RubricRow({
                   htmlFor={id}
                   className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-2 py-2 text-center transition ${
                     checked
-                      ? "border-ink-900 bg-ink-900 text-white"
+                      ? "border-sky-400 bg-sky-50 text-sky-900 ring-1 ring-sky-300"
                       : "border-stone-200 bg-white hover:bg-stone-50"
                   }`}
                 >
@@ -84,7 +84,7 @@ function RubricRow({
                     id={id}
                     type="radio"
                     name={`q-${item.id}-${index}`}
-                    className="h-4 w-4 accent-current"
+                    className="h-4 w-4 accent-sky-500"
                     checked={checked}
                     onChange={() => setRating(a.value)}
                   />
@@ -110,7 +110,7 @@ function RubricRow({
                   htmlFor={id}
                   className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-3 py-3 text-center transition ${
                     checked
-                      ? "border-ink-900 bg-ink-900 text-white"
+                      ? "border-sky-400 bg-sky-50 text-sky-900 ring-1 ring-sky-300"
                       : "border-stone-200 bg-white hover:bg-stone-50"
                   }`}
                 >
@@ -118,13 +118,13 @@ function RubricRow({
                     id={id}
                     type="radio"
                     name={`q-${item.id}-${index}`}
-                    className="h-4 w-4 accent-current"
+                    className="h-4 w-4 accent-sky-500"
                     checked={checked}
                     onChange={() => setRating(c.value)}
                   />
                   <span className="text-xs font-medium leading-tight">{c.label}</span>
                   {c.hint && (
-                    <span className={`text-[10px] leading-tight ${checked ? "opacity-70" : "text-ink-500"}`}>
+                    <span className={`text-[10px] leading-tight ${checked ? "text-sky-700" : "text-ink-500"}`}>
                       {c.hint}
                     </span>
                   )}

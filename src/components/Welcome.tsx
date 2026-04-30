@@ -24,18 +24,18 @@ export function Welcome({
   }, {});
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Clinical Validation</h1>
       <p className="mt-2 text-sm text-ink-500">
         Clinician panel review of biomarker candidates surfaced by the CoDaS pipeline.
       </p>
 
       {resumable && resumableSession?.reviewer && (
-        <section className="mt-6 card border-emerald-200 bg-emerald-50 p-5">
-          <div className="text-sm font-semibold text-emerald-900">
+        <section className="mt-6 card border-sky-200 bg-sky-50 p-5">
+          <div className="text-sm font-semibold text-sky-900">
             Welcome back{resumableSession.reviewer.name ? `, ${resumableSession.reviewer.name}` : ""}.
           </div>
-          <div className="mt-1 text-xs text-emerald-700">
+          <div className="mt-1 text-xs text-sky-700">
             We saved your progress on this device. Resume where you left off, or start fresh.
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -61,7 +61,7 @@ export function Welcome({
       )}
 
       <section className="mt-8 card p-6">
-        <h2>Source datasets</h2>
+        <h2>Datasets</h2>
         <p className="mt-2 text-sm">
           The biomarker candidates were surfaced by analysing three independent cohorts.
         </p>
@@ -96,7 +96,7 @@ export function Welcome({
       </section>
 
       <section className="mt-6 card p-6">
-        <h2>What you will do</h2>
+        <h2>Tasks</h2>
         <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
           <li>
             Rate <b>{CARDS.length}</b> result cards across {Object.keys(COHORTS).length}{" "}

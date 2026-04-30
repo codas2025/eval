@@ -181,7 +181,7 @@ export function ReviewerForm({
                   htmlFor={id}
                   className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-2 py-2 text-center transition ${
                     checked
-                      ? "border-ink-900 bg-ink-900 text-white"
+                      ? "border-sky-400 bg-sky-50 text-sky-900 ring-1 ring-sky-300"
                       : "border-stone-200 bg-white hover:bg-stone-50"
                   }`}
                 >
@@ -189,7 +189,7 @@ export function ReviewerForm({
                     id={id}
                     type="radio"
                     name="familiarity"
-                    className="h-4 w-4 accent-current"
+                    className="h-4 w-4 accent-sky-500"
                     checked={checked}
                     onChange={() => setFamiliarity(opt.v)}
                   />
