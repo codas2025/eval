@@ -2,6 +2,7 @@ import { CARDS } from "../data/cards";
 import { COHORTS } from "../data/cohorts";
 import type { Session } from "../types";
 import { PaperLink } from "./icons";
+import { isCardComplete } from "./Progress";
 
 interface WelcomeProps {
   onStart: () => void;
@@ -30,32 +31,64 @@ export function Welcome({
         Clinician panel review of biomarker candidates surfaced by the CoDaS pipeline.
       </p>
 
-      {resumable && resumableSession?.reviewer && (
-        <section className="mt-6 card border-sky-200 bg-sky-50 p-5">
-          <div className="text-sm font-semibold text-sky-900">
-            Welcome back{resumableSession.reviewer.name ? `, ${resumableSession.reviewer.name}` : ""}.
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button className="btn btn-primary" onClick={onResume}>
-              Resume my session
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                if (
-                  confirm(
-                    "Discard your in-progress session and start a new one?",
-                  )
-                ) {
-                  onResetAndStart?.();
-                }
-              }}
-            >
-              Start fresh
-            </button>
-          </div>
-        </section>
-      )}
+      {resumable && resumableSession?.reviewer && (() => {
+        const order = resumableSession.cardOrder;
+        const total = order.length;
+        const completedCount = order.filter((id) =>
+          isCardComplete(resumableSession, id),
+        ).length;
+        const nextIdx = order.findIndex(
+          (id) => !isCardComplete(resumableSession, id),
+        );
+        const nextCard =
+          nextIdx >= 0 ? CARDS.find((c) => c.id === order[nextIdx]) : null;
+        return (
+          <section className="mt-6 card border-sky-200 bg-sky-50 p-5">
+            <div className="text-sm font-semibold text-sky-900">
+              Welcome back
+              {resumableSession.reviewer.name
+                ? `, ${resumableSession.reviewer.name}`
+                : ""}
+              .
+            </div>
+            <div className="mt-1 text-xs text-sky-800">
+              {completedCount === total ? (
+                <>All {total} cards complete. Submit when ready.</>
+              ) : (
+                <>
+                  <b>{completedCount}</b> of <b>{total}</b> cards complete.
+                  {nextCard && (
+                    <>
+                      {" "}You'll resume on card <b>{nextIdx + 1}</b>:{" "}
+                      <span className="font-mono">{nextCard.id}</span>{" "}
+                      <i>{nextCard.title}</i>.
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button className="btn btn-primary" onClick={onResume}>
+                Resume my session
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Discard your in-progress session and start a new one?",
+                    )
+                  ) {
+                    onResetAndStart?.();
+                  }
+                }}
+              >
+                Start fresh
+              </button>
+            </div>
+          </section>
+        );
+      })()}
 
       <section className="mt-8 card p-6">
         <h2>Datasets</h2>
@@ -66,10 +99,10 @@ export function Welcome({
           <table className="w-full text-sm">
             <colgroup>
               <col style={{ width: "12%" }} />
-              <col style={{ width: "8%" }} />
-              <col style={{ width: "16%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "28%" }} />
               <col />
-              <col style={{ width: "8%" }} />
+              <col style={{ width: "7%" }} />
             </colgroup>
             <thead className="bg-stone-100 text-left text-xs text-ink-700">
               <tr>

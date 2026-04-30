@@ -46,10 +46,14 @@ export function CardView({
   card,
   cohort,
   showProbeAnnotation,
+  pulseTier,
+  onTierHover,
 }: {
   card: ResultCard;
   cohort: Cohort;
   showProbeAnnotation: boolean;
+  pulseTier?: boolean;
+  onTierHover?: () => void;
 }) {
   const rows: Row[] = [
     { label: "Input variable", value: card.title },
@@ -132,7 +136,12 @@ export function CardView({
                 : card.evidenceTier;
             return (
               <Tooltip text={TIER_TOOLTIP[displayTier]} width={300}>
-                <span className={pillClass(displayTier)} tabIndex={0}>
+                <span
+                  className={`${pillClass(displayTier)} ${pulseTier ? "animate-attention" : ""} cursor-help rounded-full`}
+                  tabIndex={0}
+                  onMouseEnter={onTierHover}
+                  onFocus={onTierHover}
+                >
                   {displayTier}
                 </span>
               </Tooltip>

@@ -11,6 +11,17 @@
   h3 { @apply text-lg font-semibold tracking-tight; }
 }
 
+/* Attention-pulse: a soft ring expanding outward, used on the evidence-tier
+   pills until the reviewer hovers on one (so they discover the tooltip). */
+@keyframes attention-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(56, 189, 248, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(56, 189, 248, 0);    }
+}
+.animate-attention {
+  animation: attention-pulse 1.6s ease-out infinite;
+}
+
 @layer components {
   .card {
     @apply rounded-xl border border-stone-200 bg-white shadow-sm;

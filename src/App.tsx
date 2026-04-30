@@ -28,6 +28,23 @@ export default function App() {
   const [stage, setStage] = useState<Stage>("welcome");
   const [activeCardIdx, setActiveCardIdx] = useState(0);
 
+  // Once the reviewer has hovered any evidence-tier pill, stop pulsing on
+  // every card. Persisted across sessions so we don't re-attract attention
+  // on every visit.
+  const [tierHovered, setTierHovered] = useState<boolean>(() =>
+    typeof localStorage !== "undefined" &&
+    localStorage.getItem("codas-eval-tier-hovered") === "true",
+  );
+  const markTierHovered = () => {
+    if (tierHovered) return;
+    setTierHovered(true);
+    try {
+      localStorage.setItem("codas-eval-tier-hovered", "true");
+    } catch {
+      /* ignore */
+    }
+  };
+
   const order = session.cardOrder;
   const activeCard = useMemo(
     () => CARDS.find((c) => c.id === order[activeCardIdx]),
@@ -159,6 +176,8 @@ export default function App() {
             card={activeCard}
             cohort={cohort}
             showProbeAnnotation={showProbeAnnotation}
+            pulseTier={!tierHovered}
+            onTierHover={markTierHovered}
           />
         </div>
 
