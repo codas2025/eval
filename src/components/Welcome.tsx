@@ -35,9 +35,6 @@ export function Welcome({
           <div className="text-sm font-semibold text-sky-900">
             Welcome back{resumableSession.reviewer.name ? `, ${resumableSession.reviewer.name}` : ""}.
           </div>
-          <div className="mt-1 text-xs text-sky-700">
-            We saved your progress on this device. Resume where you left off, or start fresh.
-          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <button className="btn btn-primary" onClick={onResume}>
               Resume my session
@@ -47,7 +44,7 @@ export function Welcome({
               onClick={() => {
                 if (
                   confirm(
-                    "Discard your saved progress on this device and start a new session?",
+                    "Discard your in-progress session and start a new one?",
                   )
                 ) {
                   onResetAndStart?.();
@@ -67,6 +64,13 @@ export function Welcome({
         </p>
         <div className="mt-4 overflow-hidden rounded-md border border-stone-200">
           <table className="w-full text-sm">
+            <colgroup>
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "16%" }} />
+              <col />
+              <col style={{ width: "8%" }} />
+            </colgroup>
             <thead className="bg-stone-100 text-left text-xs text-ink-700">
               <tr>
                 <th className="px-3 py-2 font-medium">Cohort</th>
@@ -79,7 +83,9 @@ export function Welcome({
             <tbody>
               {Object.values(COHORTS).map((c) => (
                 <tr key={c.id} className="border-t border-stone-100 align-top">
-                  <td className="px-3 py-2 font-semibold text-ink-900">{c.name}</td>
+                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-ink-900">
+                    {c.name}
+                  </td>
                   <td className="px-3 py-2 text-ink-700">{c.n.toLocaleString()}</td>
                   <td className="px-3 py-2 text-ink-700">{c.endpointLabel}</td>
                   <td className="px-3 py-2 text-xs leading-relaxed text-ink-700">

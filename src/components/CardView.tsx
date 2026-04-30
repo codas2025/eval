@@ -1,5 +1,6 @@
 import type { Cohort, ResultCard } from "../types";
 import { CohortHeader } from "./CohortHeader";
+import { Tooltip } from "./Tooltip";
 
 function pillClass(t: ResultCard["evidenceTier"]) {
   switch (t) {
@@ -124,18 +125,19 @@ export function CardView({
       <div className="card p-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-xs text-ink-500">{card.id}</span>
-          <span
-            className={`${pillClass(card.evidenceTier)} cursor-help`}
-            title={
+          {(() => {
+            const displayTier =
               card.evidenceTier === "Rejected" && !showProbeAnnotation
-                ? TIER_TOOLTIP.Established
-                : TIER_TOOLTIP[card.evidenceTier]
-            }
-          >
-            {card.evidenceTier === "Rejected" && !showProbeAnnotation
-              ? "Established"
-              : card.evidenceTier}
-          </span>
+                ? "Established"
+                : card.evidenceTier;
+            return (
+              <Tooltip text={TIER_TOOLTIP[displayTier]} width={300}>
+                <span className={pillClass(displayTier)} tabIndex={0}>
+                  {displayTier}
+                </span>
+              </Tooltip>
+            );
+          })()}
           {card.composite && (
             <span className="pill bg-stone-100 text-ink-700 ring-1 ring-stone-200">
               CoDaS-derived composite
