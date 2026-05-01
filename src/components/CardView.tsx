@@ -27,11 +27,12 @@ function fmtRho(r: number) {
   return `${r >= 0 ? "+" : ""}${r.toFixed(3)}`;
 }
 
-function distString(d: ResultCard["inputDist"]) {
+function distString(d: ResultCard["inputDist"], unit?: string) {
   if (!d) return null;
-  return `mean = ${d.mean.toFixed(3)}, SD = ${d.sd.toFixed(3)}, median = ${d.median.toFixed(3)}, IQR = [${d.p25.toFixed(3)}, ${d.p75.toFixed(3)}]${
+  const u = unit ? ` ${unit}` : "";
+  return `mean = ${d.mean.toFixed(3)}${u}, SD = ${d.sd.toFixed(3)}${u}, median = ${d.median.toFixed(3)}${u}, IQR = [${d.p25.toFixed(3)}, ${d.p75.toFixed(3)}]${u}${
     d.min != null && d.max != null
-      ? `, range = [${d.min.toFixed(2)}, ${d.max.toFixed(2)}]`
+      ? `, range = [${d.min.toFixed(2)}, ${d.max.toFixed(2)}]${u}`
       : ""
   } (n = ${d.n.toLocaleString()})`;
 }
@@ -66,7 +67,7 @@ export function CardView({
       label: "Cohort distribution of input",
       value:
         card.inputDist
-          ? distString(card.inputDist)
+          ? distString(card.inputDist, card.inputUnits)
           : (
             <span className="italic text-ink-500">
               Not available in the static dataset (
@@ -82,7 +83,14 @@ export function CardView({
       label: "Spearman ρ (univariate)",
       value: (
         <>
-          <b>{fmtRho(card.rho)}</b>
+          <Tooltip
+            text="Spearman ρ is a rank-based correlation, range −1 to +1. Rough interpretation: ±0.10 small, ±0.30 moderate, ±0.50 large. p value reported with Benjamini-Hochberg FDR correction across all candidates."
+            width={320}
+          >
+            <b className="cursor-help underline decoration-dotted underline-offset-2">
+              {fmtRho(card.rho)}
+            </b>
+          </Tooltip>
           {card.rhoCI ? (
             <>
               {" "}

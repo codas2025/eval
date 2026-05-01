@@ -1,16 +1,25 @@
 import { useState } from "react";
 import type { Cohort } from "../types";
 import { PaperLink } from "./icons";
+import { Histogram } from "./Histogram";
+
+const UNIT_HINT: Record<Cohort["id"], string> = {
+  dwb_hourly: "Each participant has one PHQ-8 score, an integer between 0 and 24. Higher = more depressive symptoms.",
+  globem: "Each wave-observation has one PHQ-4 score, an integer between 0 and 12. Higher = more depression / anxiety symptoms.",
+  wearme: "Each participant has one HOMA-IR value (a unitless continuous index). Higher = more insulin-resistant. The clinical cut-off used here is 2.5.",
+};
 
 export function CohortHeader({ cohort }: { cohort: Cohort }) {
   const d = cohort.endpointDist;
+  const unit = cohort.endpointUnit ?? "";
+  const fmtUnit = unit ? ` ${unit}` : "";
   const range = cohort.endpointRange
-    ? `${cohort.endpointRange[0]} to ${cohort.endpointRange[1]}`
-    : "continuous";
+    ? `${cohort.endpointRange[0]} to ${cohort.endpointRange[1]}${fmtUnit}`
+    : `continuous${fmtUnit}`;
   const cutoffNote =
     d.pct_above_cutoff != null
-      ? `${(d.pct_above_cutoff * 100).toFixed(1)}% above cutoff${
-          cohort.endpointCutoff ? ` (>${cohort.endpointCutoff})` : ""
+      ? `${(d.pct_above_cutoff * 100).toFixed(1)}% above cut-off${
+          cohort.endpointCutoff ? ` (>${cohort.endpointCutoff}${fmtUnit})` : ""
         }`
       : "";
 
@@ -20,14 +29,44 @@ export function CohortHeader({ cohort }: { cohort: Cohort }) {
     0,
   );
 
+  const distNumbers = (
+    <div>
+      n = {d.n.toLocaleString()}, mean {d.mean.toFixed(2)}
+      {fmtUnit}, SD {d.sd.toFixed(2)}, median {d.median}, IQR [
+      {d.p25}, {d.p75}]
+      {cutoffNote ? `, ${cutoffNote}` : ""}
+      <div className="mt-1 text-[11px] text-ink-500">{UNIT_HINT[cohort.id]}</div>
+      {cohort.endpointHistogram && (
+        <div className="mt-2">
+          <Histogram
+            data={cohort.endpointHistogram}
+            cutoff={cohort.endpointCutoff}
+            unit={unit}
+            highlightIQR={[d.p25, d.p75]}
+          />
+        </div>
+      )}
+    </div>
+  );
+
   const summary: { k: string; v: React.ReactNode }[] = [
-    { k: "Cohort", v: <span className="font-semibold">{cohort.name}</span> },
-    { k: "N", v: cohort.n.toLocaleString() },
-    { k: "Endpoint", v: `${cohort.endpointLabel} (${range})` },
     {
-      k: "Endpoint distribution",
-      v: `n = ${d.n.toLocaleString()}, mean ${d.mean.toFixed(2)}, SD ${d.sd.toFixed(2)}, median ${d.median}, IQR [${d.p25}, ${d.p75}]${cutoffNote ? `, ${cutoffNote}` : ""}`,
+      k: "Study",
+      v: (
+        <>
+          <span className="font-semibold">{cohort.displayName ?? cohort.name}</span>
+          {cohort.displayName ? (
+            <span className="ml-1 text-ink-500">(internal handle: {cohort.name})</span>
+          ) : null}
+        </>
+      ),
     },
+    { k: "Participants (N)", v: cohort.n.toLocaleString() },
+    { k: "Endpoint", v: `${cohort.endpointLabel} (range ${range})` },
+    ...(cohort.endpointTLDR
+      ? [{ k: "What this endpoint means", v: cohort.endpointTLDR }]
+      : []),
+    { k: "Endpoint distribution", v: distNumbers },
     { k: "Demographic covariates", v: cohort.covariates.join(", ") },
     { k: "Population", v: cohort.populationDescriptor },
   ];
@@ -35,7 +74,14 @@ export function CohortHeader({ cohort }: { cohort: Cohort }) {
   return (
     <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-xs leading-relaxed">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-ink-900">{cohort.name}</div>
+        <div className="text-sm font-semibold text-ink-900">
+          {cohort.displayName ?? cohort.name}
+          {cohort.displayName ? (
+            <span className="ml-2 text-[11px] font-normal text-ink-500">
+              {cohort.name}
+            </span>
+          ) : null}
+        </div>
         {cohort.sourceUrl && <PaperLink url={cohort.sourceUrl} />}
       </div>
 

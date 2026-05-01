@@ -91,22 +91,26 @@ export function Welcome({
       })()}
 
       <section className="mt-8 card p-6">
-        <h2>Datasets</h2>
+        <h2>Studies</h2>
         <p className="mt-2 text-sm">
-          The biomarker candidates were surfaced by analysing three independent cohorts.
+          The biomarker candidates were surfaced by analysing three independent
+          studies. Each result card below tells you which study the candidate
+          comes from and what its endpoint is. You do <i>not</i> need to memorise
+          the internal study handles &mdash; the human-readable name is always
+          shown next to the data.
         </p>
         <div className="mt-4 overflow-hidden rounded-md border border-stone-200">
           <table className="w-full text-sm">
             <colgroup>
-              <col style={{ width: "12%" }} />
+              <col style={{ width: "22%" }} />
               <col style={{ width: "7%" }} />
-              <col style={{ width: "28%" }} />
+              <col style={{ width: "26%" }} />
               <col />
               <col style={{ width: "7%" }} />
             </colgroup>
             <thead className="bg-stone-100 text-left text-xs text-ink-700">
               <tr>
-                <th className="px-3 py-2 font-medium">Cohort</th>
+                <th className="px-3 py-2 font-medium">Study</th>
                 <th className="px-3 py-2 font-medium">N</th>
                 <th className="px-3 py-2 font-medium">Endpoint</th>
                 <th className="px-3 py-2 font-medium">Description</th>
@@ -116,11 +120,21 @@ export function Welcome({
             <tbody>
               {Object.values(COHORTS).map((c) => (
                 <tr key={c.id} className="border-t border-stone-100 align-top">
-                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-ink-900">
-                    {c.name}
+                  <td className="px-3 py-2 text-ink-900">
+                    <div className="font-semibold">{c.displayName ?? c.name}</div>
+                    <div className="text-[11px] text-ink-500">
+                      Internal handle: {c.name}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-ink-700">{c.n.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-ink-700">{c.endpointLabel}</td>
+                  <td className="px-3 py-2 text-ink-700">
+                    <div>{c.endpointLabel}</div>
+                    {c.endpointUnit && (
+                      <div className="text-[11px] text-ink-500">
+                        units: {c.endpointUnit}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-xs leading-relaxed text-ink-700">
                     {c.sourceDescription}
                   </td>
@@ -139,9 +153,9 @@ export function Welcome({
         <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
           <li>
             Rate <b>{CARDS.length}</b> result cards across {Object.keys(COHORTS).length}{" "}
-            cohorts ({counts.dwb_hourly ?? 0} {COHORTS.dwb_hourly.name},{" "}
-            {counts.globem ?? 0} {COHORTS.globem.name},{" "}
-            {counts.wearme ?? 0} {COHORTS.wearme.name}).
+            studies ({counts.dwb_hourly ?? 0} {COHORTS.dwb_hourly.displayName ?? COHORTS.dwb_hourly.name},{" "}
+            {counts.globem ?? 0} {COHORTS.globem.displayName ?? COHORTS.globem.name},{" "}
+            {counts.wearme ?? 0} {COHORTS.wearme.displayName ?? COHORTS.wearme.name}).
           </li>
           <li>
             For each card, answer 8 rating questions plus an optional open ended question.
@@ -150,6 +164,48 @@ export function Welcome({
             About 5 to 8 minutes per card. Total ≈ 90 to 120 minutes. Saved automatically; you can leave and resume.
           </li>
         </ul>
+      </section>
+
+      <section className="mt-6 card p-6">
+        <h2>Quick reference</h2>
+        <p className="mt-2 text-sm text-ink-700">
+          Terms used on the result cards. Hover the underlined ones inside each
+          card for a brief reminder.
+        </p>
+        <div className="mt-3 overflow-hidden rounded-md border border-stone-200">
+          <table className="w-full text-xs">
+            <tbody className="text-ink-900">
+              <tr className="border-t border-stone-100 first:border-t-0 align-top">
+                <td className="w-[28%] bg-stone-50 px-3 py-2 font-semibold">PHQ-8</td>
+                <td className="px-3 py-2">8-item self-report depression severity score, integer 0 to 24. ≥10 = moderate or worse depression.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">PHQ-4</td>
+                <td className="px-3 py-2">4-item brief depression / anxiety screener, integer 0 to 12. ≥6 = clinically relevant distress.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">HOMA-IR</td>
+                <td className="px-3 py-2">Homeostatic Model Assessment of Insulin Resistance. Continuous unitless index = (fasting insulin µU/mL × fasting glucose mg/dL) / 405. ~1.0 in healthy adults; ≥2.5 used here as the insulin-resistance cut-off.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">Spearman ρ</td>
+                <td className="px-3 py-2">A rank-based correlation. Range −1 to +1. A &nbsp;&rho;&nbsp; near 0 means no monotonic association; ±0.10 small; ±0.30 moderate; ±0.50 large.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">IQR</td>
+                <td className="px-3 py-2">Interquartile range = the 25th to 75th percentile of the distribution. Half of the participants fall inside this band.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">BH-FDR</td>
+                <td className="px-3 py-2">Benjamini-Hochberg false-discovery-rate correction for multiple testing. p {"<"} 0.001 (BH-FDR) means the result remains significant after correcting for the dozens of candidates evaluated.</td>
+              </tr>
+              <tr className="border-t border-stone-100 align-top">
+                <td className="bg-stone-50 px-3 py-2 font-semibold">Evidence tier</td>
+                <td className="px-3 py-2">CoDaS-assigned label: <i>Established</i> (validates known associations) · <i>Supported</i> (known axis, novel operationalisation) · <i>Emerging</i> (limited prior literature) · <i>Rejected</i> (failed CoDaS construct-independence check).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="mt-6 card p-6">

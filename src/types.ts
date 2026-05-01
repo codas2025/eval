@@ -12,12 +12,35 @@ export interface Distribution {
   pct_above_cutoff?: number;
 }
 
+export interface Histogram {
+  /** Bin edges, length = counts.length + 1. */
+  edges: number[];
+  counts: number[];
+  n: number;
+}
+
 export interface Cohort {
   id: "dwb_hourly" | "globem" | "wearme";
+  /** Internal handle (DWB Hourly, GLOBEM, WEAR-ME). */
   name: string;
+  /** Plain-language label shown to clinicians, e.g. "Smartphone behavior &
+   *  depression study". Kept as a separate field so we can surface internal
+   *  acronyms next to a self-explanatory description without renaming the
+   *  underlying data ids. */
+  displayName?: string;
   populationDescriptor: string;
   n: number;
   endpointLabel: string;
+  /** Unit for the endpoint distribution (e.g. "PHQ-8 points",
+   *  "unitless index"). Surfaced alongside mean / SD / IQR so clinicians
+   *  do not have to infer the scale. */
+  endpointUnit?: string;
+  /** One-line, plain-language description of the endpoint and its
+   *  interpretation. Useful for less common measures (e.g. HOMA-IR). */
+  endpointTLDR?: string;
+  /** Optional precomputed histogram of the endpoint, used to render a
+   *  small inline distribution figure for the clinician. */
+  endpointHistogram?: Histogram;
   endpointRange: [number, number] | null;
   endpointDist: Distribution;
   endpointCutoff?: number;

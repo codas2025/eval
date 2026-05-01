@@ -8,6 +8,7 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
   dwb_hourly: {
     id: "dwb_hourly",
     name: "DWB Hourly",
+    displayName: "Smartphone behavior & depression study",
     populationDescriptor:
       "Digital Wellbeing Hourly cohort: 7,497 unique adult participants (mean age 43.9 ± 12.7 yrs; 70.0% female, 26.5% male, 7.6% Hispanic) enrolled in a US-wide passive-sensing study with hourly multimodal smartphone telemetry (sleep architecture, step counts, resting heart rate, app usage). Mean monitoring duration 26.5 ± 4.7 days; 4.55M raw hourly observations aggregated to participant-level feature vectors. Conducted under approved institutional IRB.",
     sourceDescription:
@@ -15,6 +16,9 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
     sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/38743938/",
     n: 7497,
     endpointLabel: "PHQ-8 depression severity (per manuscript Table 3)",
+    endpointUnit: "PHQ-8 points",
+    endpointTLDR:
+      "PHQ-8 is the standard 8-item self-report depression screener (sum of 8 items, each 0 to 3). Higher scores = more depressive symptoms; ≥10 is the conventional cut-off for moderate or worse depression.",
     endpointRange: [0, 24],
     endpointDist: {
       n: 7497,
@@ -24,6 +28,11 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
       p25: 3,
       p75: 11,
       pct_above_cutoff: 0.32,
+    },
+    endpointHistogram: {
+      edges: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+      counts: [489, 530, 621, 673, 610, 542, 525, 504, 425, 347, 337, 293, 270, 240, 205, 181, 151, 123, 118, 93, 78, 52, 33, 23, 34],
+      n: 7497,
     },
     covariates: [
       "gender",
@@ -159,6 +168,7 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
   globem: {
     id: "globem",
     name: "GLOBEM",
+    displayName: "Smartphone behavior & mental health study (young adults)",
     populationDescriptor:
       "Mobile-sensing longitudinal cohort across 4 annual waves (2018-2021): 8,225 wave-observations from 704 unique young-adult participants (mean age 19.2 ± 1.4 yrs; 58.8% female, 40.2% male; 57.4% Asian, 36.4% White). Multi-platform (78.6% iOS, 21.4% Android). Substantial feature-level missingness (~54.6%). Mean monitoring duration per wave 70.2 ± 9.7 days. RAPIDS-computed feature set (5,508 features).",
     sourceDescription:
@@ -166,6 +176,9 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
     sourceUrl: "https://the-globem.github.io/",
     n: 704,
     endpointLabel: "PHQ-4 depression / anxiety screen",
+    endpointUnit: "PHQ-4 points",
+    endpointTLDR:
+      "PHQ-4 is a 4-item depression-and-anxiety screener (sum of 4 items, each 0 to 3). Higher scores = more symptoms; ≥6 is the conventional cut-off for clinically relevant distress.",
     endpointRange: [0, 12],
     endpointDist: {
       n: 5347,
@@ -175,6 +188,11 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
       p25: 1,
       p75: 4,
       pct_above_cutoff: 0.229,
+    },
+    endpointHistogram: {
+      edges: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+      counts: [1278, 778, 745, 612, 710, 302, 249, 184, 201, 94, 89, 41, 64],
+      n: 5347,
     },
     covariates: ["age", "gender", "platform"],
     availableColumns: [
@@ -194,6 +212,7 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
   wearme: {
     id: "wearme",
     name: "WEAR-ME",
+    displayName: "Wearable insulin-resistance study",
     populationDescriptor:
       "Cardiometabolic risk-stratification cohort: 1,078 adult participants (from an original 1,165; 87 excluded for incomplete wearable feature coverage) recruited remotely across the US via Google Health Studies. Mean age 46.9 ± 12.5 yrs; 54.4% female, 43.6% male; mean BMI 29.2 ± 6.7 kg/m². Wore Fitbit / Pixel Watch capturing high-resolution heart rate, HRV, steps, sleep, and active-zone minutes. All participants underwent fasting laboratory tests (≥8 fasting hours) early morning. Outcome labels: 276 IR / 802 Non-IR; 38 diabetic / 147 prediabetic / 893 normoglycemic.",
     sourceDescription:
@@ -201,6 +220,9 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
     sourceUrl: "https://www.nature.com/articles/s41586-026-10179-2",
     n: 1078,
     endpointLabel: "HOMA-IR (continuous insulin-resistance index)",
+    endpointUnit: "HOMA-IR (unitless index)",
+    endpointTLDR:
+      "HOMA-IR = (fasting insulin in µU/mL × fasting glucose in mg/dL) / 405. It is a unitless, continuous index of insulin resistance. Higher = more insulin-resistant. Typical reference: ≈1.0 in healthy adults; ≥2.5 is the cut-off used here for likely insulin resistance.",
     endpointRange: null,
     endpointDist: {
       n: 1078,
@@ -210,6 +232,11 @@ export const COHORTS: Record<Cohort["id"], Cohort> = {
       p25: 1.12,
       p75: 2.93,
       pct_above_cutoff: 0.256,
+    },
+    endpointHistogram: {
+      edges: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 14.83],
+      counts: [215, 391, 216, 114, 54, 28, 11, 10, 7, 9, 6, 7, 6, 2, 2],
+      n: 1078,
     },
     endpointCutoff: 2.5,
     covariates: ["age", "sex", "BMI"],
