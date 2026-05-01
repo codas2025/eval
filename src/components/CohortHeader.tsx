@@ -44,6 +44,25 @@ export function CohortHeader({ cohort }: { cohort: Cohort }) {
             unit={unit}
             highlightIQR={[d.p25, d.p75]}
           />
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-500">
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-2 w-3 rounded-sm bg-sky-200"></span>
+              IQR (25th to 75th percentile)
+            </span>
+            {cohort.endpointCutoff != null && (
+              <span className="inline-flex items-center gap-1">
+                <span
+                  aria-hidden
+                  className="inline-block h-2.5 w-3"
+                  style={{
+                    borderLeft: "1.5px dashed #dc2626",
+                  }}
+                ></span>
+                Clinical cut-off ({cohort.endpointCutoff})
+              </span>
+            )}
+            <span className="text-ink-500/80">Hover any bar for the count.</span>
+          </div>
         </div>
       )}
     </div>

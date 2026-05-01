@@ -19,6 +19,8 @@ export default function App() {
     cloudSync,
     startSession,
     updateResponse,
+    stampCardTimestamp,
+    stampCardCompleted,
     updateGlobalFeedback,
     finishSession,
     resetSession,
@@ -53,11 +55,15 @@ export default function App() {
   );
   const cohort = activeCard ? COHORTS[activeCard.cohortId] : null;
 
-  // Calibration probe arm: half of panel sees the rejection annotation, the
-  // other half does not. Keyed on email so the same person stays on the same
-  // arm across sessions and devices.
+  // Calibration probe arm: persisted in the reviewer profile at session
+  // start (useSession.startSession). Falls back to recomputing from the
+  // email so legacy sessions saved before the field existed still render
+  // the right arm.
   const showProbeAnnotation = useMemo(() => {
     if (!session.reviewer) return true;
+    if (typeof session.reviewer.probeArm === "boolean") {
+      return session.reviewer.probeArm;
+    }
     const key = session.reviewer.email.toLowerCase();
     let h = 0;
     for (let i = 0; i < key.length; i++) {
@@ -69,6 +75,15 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activeCardIdx, stage]);
+
+  // Stamp first-arrival time on the active card whenever the reviewer
+  // navigates to it. Idempotent: only writes startedAt if not already set.
+  useEffect(() => {
+    if (stage !== "cards") return;
+    const cardId = order[activeCardIdx];
+    if (!cardId) return;
+    stampCardTimestamp(cardId, "startedAt");
+  }, [stage, activeCardIdx, order, stampCardTimestamp]);
 
   if (stage === "welcome") {
     return (
@@ -157,6 +172,7 @@ export default function App() {
           <button
             className="btn btn-secondary"
             onClick={() => {
+              if (activeCard) stampCardCompleted(activeCard.id);
               // Immediate flush so the reviewer can confirm their progress
               // landed in the cloud before they leave the tab.
               void logProgress(session);
@@ -213,7 +229,10 @@ export default function App() {
           <button
             className="btn btn-secondary"
             disabled={activeCardIdx === 0}
-            onClick={() => setActiveCardIdx((i) => Math.max(0, i - 1))}
+            onClick={() => {
+              stampCardCompleted(activeCard.id);
+              setActiveCardIdx((i) => Math.max(0, i - 1));
+            }}
           >
             ← Previous
           </button>
@@ -224,7 +243,10 @@ export default function App() {
             <button
               className="btn btn-primary"
               disabled={!complete}
-              onClick={() => setStage("submit")}
+              onClick={() => {
+                stampCardCompleted(activeCard.id);
+                setStage("submit");
+              }}
               title={complete ? "" : "Answer required items first"}
             >
               Review & submit →
@@ -233,9 +255,10 @@ export default function App() {
             <button
               className="btn btn-primary"
               disabled={!complete}
-              onClick={() =>
-                setActiveCardIdx((i) => Math.min(order.length - 1, i + 1))
-              }
+              onClick={() => {
+                stampCardCompleted(activeCard.id);
+                setActiveCardIdx((i) => Math.min(order.length - 1, i + 1));
+              }}
               title={complete ? "" : "Answer required items first"}
             >
               Next card →

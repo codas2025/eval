@@ -117,6 +117,14 @@ export interface ReviewerMeta {
   // session
   reviewerId: string;
   startedAt: string;
+  /** Calibration-probe arm assignment: true = reviewer sees the
+   *  "Rejected by CoDaS" annotation on the calibration probe; false =
+   *  they see it as if it were a regular candidate. Computed
+   *  deterministically from the lowercased email by useSession.startSession
+   *  so the arm stays stable across resumes, and persisted here so the
+   *  audit trail does not depend on recomputing the hash later. The form
+   *  does not set this; useSession adds it before saving. */
+  probeArm?: boolean;
 }
 
 export interface CardResponse {

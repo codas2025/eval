@@ -136,11 +136,23 @@ export function useSession() {
 
   const startSession = useCallback(
     (reviewer: ReviewerMeta) => {
-      const seed = hashSeed(reviewer.email.toLowerCase());
+      const emailLower = reviewer.email.toLowerCase();
+      const seed = hashSeed(emailLower);
       const order = shuffle(
         CARDS.map((c) => c.id),
         seed,
       );
+      // Probe-arm assignment: same deterministic hash that App.tsx used
+      // before, but now persisted in the reviewer profile so analysis can
+      // read it directly instead of recomputing.
+      let h = 0;
+      for (let i = 0; i < emailLower.length; i++) {
+        h = ((h << 5) - h + emailLower.charCodeAt(i)) | 0;
+      }
+      const probeArm = (h >>> 0) % 2 === 0;
+
+      const reviewerWithArm: ReviewerMeta = { ...reviewer, probeArm };
+
       // Pre-fill every card with its visual defaults so the rubric radios
       // show "3" pre-checked. touched=false marks them as pure pre-fills;
       // they will only count as completed after the reviewer makes a change.
@@ -148,7 +160,7 @@ export function useSession() {
       for (const id of order) responses[id] = emptyResponse(id);
       const next: Session = {
         schemaVersion: SCHEMA_VERSION,
-        reviewer,
+        reviewer: reviewerWithArm,
         cardOrder: order,
         responses,
         globalFeedback: {},
@@ -183,6 +195,39 @@ export function useSession() {
     [],
   );
 
+  /** Stamp `startedAt` the first time a card is visited and `completedAt`
+   *  when the reviewer leaves a card. Does NOT flip `touched` — passive
+   *  navigation should not mark a card as engaged-with. */
+  const stampCardTimestamp = useCallback(
+    (cardId: string, field: "startedAt" | "completedAt") => {
+      const now = new Date().toISOString();
+      setSession((prev) => {
+        const cur = prev.responses[cardId] ?? emptyResponse(cardId);
+        if (cur[field]) return prev; // first-write-wins for startedAt; for completedAt we want the latest, so we always overwrite
+        const next: CardResponse = { ...cur, [field]: now };
+        return {
+          ...prev,
+          responses: { ...prev.responses, [cardId]: next },
+        };
+      });
+    },
+    [],
+  );
+
+  /** Always-overwrite version, used for completedAt so we record the most
+   *  recent leave. */
+  const stampCardCompleted = useCallback((cardId: string) => {
+    const now = new Date().toISOString();
+    setSession((prev) => {
+      const cur = prev.responses[cardId] ?? emptyResponse(cardId);
+      const next: CardResponse = { ...cur, completedAt: now };
+      return {
+        ...prev,
+        responses: { ...prev.responses, [cardId]: next },
+      };
+    });
+  }, []);
+
   const updateGlobalFeedback = useCallback(
     (id: string, value: string) => {
       setSession((prev) => ({
@@ -212,6 +257,8 @@ export function useSession() {
     cloudSync,
     startSession,
     updateResponse,
+    stampCardTimestamp,
+    stampCardCompleted,
     updateGlobalFeedback,
     finishSession,
     resetSession,

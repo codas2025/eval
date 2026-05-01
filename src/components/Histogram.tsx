@@ -1,13 +1,14 @@
+import { useState } from "react";
 import type { Histogram as HistogramData } from "../types";
 
-/** Tiny inline histogram. Designed to be visually unfussy: one column per bin,
- *  no axes, range labels and a single cut-off marker. Intent is to give the
- *  clinician a glance-level sense of distribution shape so the
- *  mean/median/IQR numbers feel concrete. */
+/** Tiny inline histogram. No axis labels (we already show numeric mean / SD /
+ *  median / IQR alongside). Hovering a bar reveals a small popover with the
+ *  bin range, count, and percentage. The dashed red line marks the clinical
+ *  cut-off when one is supplied. */
 export function Histogram({
   data,
   width = 320,
-  height = 56,
+  height = 48,
   cutoff,
   unit,
   highlightIQR,
@@ -15,13 +16,13 @@ export function Histogram({
   data: HistogramData;
   width?: number;
   height?: number;
-  /** Optional vertical line at this x-value (e.g. the clinical cut-off). */
   cutoff?: number;
   unit?: string;
-  /** Optional [p25, p75] to softly shade the IQR band. */
   highlightIQR?: [number, number];
 }) {
   const { edges, counts, n } = data;
+  const [hovered, setHovered] = useState<number | null>(null);
+
   if (!edges.length || !counts.length) return null;
 
   const x0 = edges[0];
@@ -29,10 +30,11 @@ export function Histogram({
   const span = xN - x0 || 1;
   const maxCount = Math.max(...counts, 1);
 
-  const padL = 4;
-  const padR = 4;
-  const padT = 4;
-  const padB = 14;
+  // No axis labels means we can use almost the full canvas for the bars.
+  const padL = 2;
+  const padR = 2;
+  const padT = 2;
+  const padB = 2;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
 
@@ -44,8 +46,10 @@ export function Histogram({
       ? { x0: xPx(highlightIQR[0]), x1: xPx(highlightIQR[1]) }
       : null;
 
+  const fmtEdge = (v: number) => v.toFixed(v % 1 === 0 ? 0 : 2);
+
   return (
-    <figure className="m-0 inline-flex flex-col">
+    <div className="relative inline-block">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         width={width}
@@ -53,6 +57,7 @@ export function Histogram({
         role="img"
         aria-label={`Histogram of ${unit ?? "the endpoint"} (n = ${n.toLocaleString()})`}
         className="block max-w-full"
+        onMouseLeave={() => setHovered(null)}
       >
         <rect
           x={padL}
@@ -79,6 +84,7 @@ export function Histogram({
           const w = Math.max(1, xRight - xLeft - 1);
           const y = yPx(c);
           const h = padT + innerH - y;
+          const isHover = hovered === i;
           return (
             <rect
               key={i}
@@ -86,13 +92,12 @@ export function Histogram({
               y={y}
               width={w}
               height={h}
-              fill="#0c4a6e"
-              opacity={0.75}
-            >
-              <title>
-                {`${edges[i].toFixed(edges[i] % 1 === 0 ? 0 : 2)} to ${edges[i + 1].toFixed(edges[i + 1] % 1 === 0 ? 0 : 2)}: ${c.toLocaleString()} participants (${((c / n) * 100).toFixed(1)}%)`}
-              </title>
-            </rect>
+              fill={isHover ? "#0ea5e9" : "#0c4a6e"}
+              opacity={isHover ? 1 : 0.78}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered((cur) => (cur === i ? null : cur))}
+              style={{ cursor: "default" }}
+            />
           );
         })}
         {cutoff != null && cutoff > x0 && cutoff < xN && (
@@ -104,39 +109,42 @@ export function Histogram({
             stroke="#dc2626"
             strokeWidth={1.25}
             strokeDasharray="3 2"
-          >
-            <title>{`Clinical cut-off: ${cutoff}`}</title>
-          </line>
-        )}
-        <text x={padL} y={height - 3} fontSize={9} fill="#78716c">
-          {String(x0)}
-        </text>
-        <text
-          x={width - padR}
-          y={height - 3}
-          fontSize={9}
-          fill="#78716c"
-          textAnchor="end"
-        >
-          {String(xN)}
-        </text>
-        {cutoff != null && cutoff > x0 && cutoff < xN && (
-          <text
-            x={xPx(cutoff)}
-            y={height - 3}
-            fontSize={9}
-            fill="#dc2626"
-            textAnchor="middle"
-          >
-            {`cut-off ${cutoff}`}
-          </text>
+          />
         )}
       </svg>
-      <figcaption className="mt-0.5 text-[10px] text-ink-500">
-        Distribution across n = {n.toLocaleString()} participants
-        {unit ? ` (${unit})` : ""}.
-        {iqrShade ? " Shaded band = interquartile range (25th to 75th percentile)." : ""}
-      </figcaption>
-    </figure>
+
+      {hovered != null && (() => {
+        const c = counts[hovered];
+        const pct = (c / n) * 100;
+        const xCenter = (xPx(edges[hovered]) + xPx(edges[hovered + 1])) / 2;
+        const leftPct = (xCenter / width) * 100;
+        const includesCutoff =
+          cutoff != null &&
+          cutoff >= edges[hovered] &&
+          cutoff < edges[hovered + 1];
+        return (
+          <div
+            className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-md bg-ink-900 px-2 py-1.5 text-[11px] leading-snug text-white shadow-lg"
+            style={{ left: `${leftPct}%`, top: 0, whiteSpace: "nowrap" }}
+            role="tooltip"
+          >
+            <div className="font-semibold">
+              {fmtEdge(edges[hovered])} to {fmtEdge(edges[hovered + 1])}
+              {unit ? ` ${unit}` : ""}
+            </div>
+            <div>
+              {c.toLocaleString()} of {n.toLocaleString()} participants
+              {" "}
+              ({pct.toFixed(1)}%)
+            </div>
+            {includesCutoff && (
+              <div className="mt-0.5 text-rose-300">
+                Contains the clinical cut-off ({cutoff})
+              </div>
+            )}
+          </div>
+        );
+      })()}
+    </div>
   );
 }
