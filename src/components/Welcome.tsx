@@ -95,9 +95,9 @@ export function Welcome({
         <p className="mt-2 text-sm">
           The biomarker candidates were surfaced by analysing three independent
           studies. Each result card below tells you which study the candidate
-          comes from and what its endpoint is. You do <i>not</i> need to memorise
-          the internal study handles &mdash; the human-readable name is always
-          shown next to the data.
+          comes from and what its endpoint is. The internal handle is shown in
+          black with a plain-language description underneath in grey, so you
+          can use whichever feels natural.
         </p>
         <div className="mt-4 overflow-hidden rounded-md border border-stone-200">
           <table className="w-full text-sm">
@@ -121,10 +121,12 @@ export function Welcome({
               {Object.values(COHORTS).map((c) => (
                 <tr key={c.id} className="border-t border-stone-100 align-top">
                   <td className="px-3 py-2 text-ink-900">
-                    <div className="font-semibold">{c.displayName ?? c.name}</div>
-                    <div className="text-[11px] text-ink-500">
-                      Internal handle: {c.name}
-                    </div>
+                    <div className="font-semibold">{c.name}</div>
+                    {c.displayName ? (
+                      <div className="text-[11px] text-ink-500">
+                        {c.displayName}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-3 py-2 text-ink-700">{c.n.toLocaleString()}</td>
                   <td className="px-3 py-2 text-ink-700">
@@ -152,10 +154,12 @@ export function Welcome({
         <h2>Tasks</h2>
         <ul className="mt-2 list-disc pl-5 text-sm space-y-1">
           <li>
-            Rate <b>{CARDS.length}</b> result cards across {Object.keys(COHORTS).length}{" "}
-            studies ({counts.dwb_hourly ?? 0} {COHORTS.dwb_hourly.displayName ?? COHORTS.dwb_hourly.name},{" "}
-            {counts.globem ?? 0} {COHORTS.globem.displayName ?? COHORTS.globem.name},{" "}
-            {counts.wearme ?? 0} {COHORTS.wearme.displayName ?? COHORTS.wearme.name}).
+            Rate <b>{CARDS.length}</b> result cards across{" "}
+            {Object.keys(COHORTS).length} studies ({counts.dwb_hourly ?? 0}{" "}
+            {COHORTS.dwb_hourly.name}, {counts.globem ?? 0}{" "}
+            {COHORTS.globem.name}, {counts.wearme ?? 0}{" "}
+            {COHORTS.wearme.name}). The Studies table above gives the
+            plain-language description for each handle.
           </li>
           <li>
             For each card, answer 8 rating questions plus an optional open ended question.

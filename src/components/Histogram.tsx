@@ -90,7 +90,7 @@ export function Histogram({
               opacity={0.75}
             >
               <title>
-                {`${edges[i].toFixed(edges[i] % 1 === 0 ? 0 : 2)} – ${edges[i + 1].toFixed(edges[i + 1] % 1 === 0 ? 0 : 2)}: ${c.toLocaleString()} participants (${((c / n) * 100).toFixed(1)}%)`}
+                {`${edges[i].toFixed(edges[i] % 1 === 0 ? 0 : 2)} to ${edges[i + 1].toFixed(edges[i + 1] % 1 === 0 ? 0 : 2)}: ${c.toLocaleString()} participants (${((c / n) * 100).toFixed(1)}%)`}
               </title>
             </rect>
           );

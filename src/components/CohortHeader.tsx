@@ -53,12 +53,12 @@ export function CohortHeader({ cohort }: { cohort: Cohort }) {
     {
       k: "Study",
       v: (
-        <>
-          <span className="font-semibold">{cohort.displayName ?? cohort.name}</span>
+        <div>
+          <div className="font-semibold">{cohort.name}</div>
           {cohort.displayName ? (
-            <span className="ml-1 text-ink-500">(internal handle: {cohort.name})</span>
+            <div className="text-ink-500">{cohort.displayName}</div>
           ) : null}
-        </>
+        </div>
       ),
     },
     { k: "Participants (N)", v: cohort.n.toLocaleString() },
@@ -73,13 +73,13 @@ export function CohortHeader({ cohort }: { cohort: Cohort }) {
 
   return (
     <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-xs leading-relaxed">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-ink-900">
-          {cohort.displayName ?? cohort.name}
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-ink-900">{cohort.name}</div>
           {cohort.displayName ? (
-            <span className="ml-2 text-[11px] font-normal text-ink-500">
-              {cohort.name}
-            </span>
+            <div className="text-[11px] font-normal text-ink-500">
+              {cohort.displayName}
+            </div>
           ) : null}
         </div>
         {cohort.sourceUrl && <PaperLink url={cohort.sourceUrl} />}
