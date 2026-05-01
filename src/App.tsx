@@ -16,6 +16,7 @@ export default function App() {
   const {
     reviewerId,
     session,
+    cloudSync,
     startSession,
     updateResponse,
     updateGlobalFeedback,
@@ -107,7 +108,7 @@ export default function App() {
   if (stage === "submit") {
     return (
       <>
-        <ProgressBar session={session} />
+        <ProgressBar session={session} cloudSync={cloudSync} />
         <Submit
           session={session}
           onUpdateGlobalFeedback={updateGlobalFeedback}

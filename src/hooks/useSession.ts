@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CardResponse,
   ReviewerMeta,
@@ -6,6 +6,12 @@ import type {
 } from "../types";
 import { CARDS } from "../data/cards";
 import { logProgress } from "../firebase";
+
+export type CloudSyncStatus =
+  | { kind: "idle" }
+  | { kind: "syncing" }
+  | { kind: "ok"; at: string }
+  | { kind: "error"; message: string; at: string };
 
 const STORAGE_PREFIX = "codas-eval-session-";
 const SCHEMA_VERSION = "3";
@@ -99,13 +105,31 @@ export function useSession() {
     localStorage.setItem(STORAGE_PREFIX + reviewerId, JSON.stringify(session));
   }, [reviewerId, session]);
 
+  const [cloudSync, setCloudSync] = useState<CloudSyncStatus>({ kind: "idle" });
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+
   // Debounced cloud auto-save: 1.5 s after the last change, push current
   // session state to RTDB. logProgress() filters out untouched cards so the
-  // cloud only shows actual annotations.
+  // cloud only shows actual annotations. Skip once finishedAt is set so the
+  // post-submit state change does not race submitToFirestore() and revert
+  // status:completed back to status:in_progress.
   useEffect(() => {
     if (!reviewerId || !session.reviewer) return;
-    const t = setTimeout(() => {
-      void logProgress(session);
+    if (session.finishedAt) return;
+    const t = setTimeout(async () => {
+      setCloudSync({ kind: "syncing" });
+      const r = await logProgress(sessionRef.current);
+      const at = new Date().toISOString();
+      if (r.ok) {
+        setCloudSync({ kind: "ok", at });
+      } else {
+        setCloudSync({
+          kind: "error",
+          message: r.error ?? "unknown error",
+          at,
+        });
+      }
     }, 1500);
     return () => clearTimeout(t);
   }, [reviewerId, session]);
@@ -185,6 +209,7 @@ export function useSession() {
   return {
     reviewerId,
     session,
+    cloudSync,
     startSession,
     updateResponse,
     updateGlobalFeedback,

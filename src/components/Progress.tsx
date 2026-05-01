@@ -1,7 +1,7 @@
 import type { Session } from "../types";
 import { CARDS } from "../data/cards";
 import { RUBRIC } from "../data/rubric";
-import { DEFAULT_RATINGS } from "../hooks/useSession";
+import { DEFAULT_RATINGS, type CloudSyncStatus } from "../hooks/useSession";
 
 export function isCardComplete(session: Session, cardId: string): boolean {
   return missingForCard(session, cardId).length === 0;
@@ -47,16 +47,54 @@ export function missingForCard(session: Session, cardId: string): string[] {
   return out;
 }
 
-export function ProgressBar({ session }: { session: Session }) {
+function SyncBadge({ status }: { status: CloudSyncStatus }) {
+  if (status.kind === "idle") return null;
+  if (status.kind === "syncing") {
+    return (
+      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] text-ink-500 ring-1 ring-stone-200">
+        Saving to cloud…
+      </span>
+    );
+  }
+  if (status.kind === "ok") {
+    return (
+      <span
+        className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700 ring-1 ring-emerald-200"
+        title={`Last cloud save: ${status.at}`}
+      >
+        Saved to cloud
+      </span>
+    );
+  }
+  return (
+    <span
+      className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] text-rose-700 ring-1 ring-rose-200"
+      title={`Last error at ${status.at}: ${status.message}. Local copy is preserved; click 'Save and exit' to retry, or download the JSON copy on the final page.`}
+    >
+      Cloud save failed (your responses are still safe locally)
+    </span>
+  );
+}
+
+export function ProgressBar({
+  session,
+  cloudSync,
+}: {
+  session: Session;
+  cloudSync?: CloudSyncStatus;
+}) {
   const order = session.cardOrder.length ? session.cardOrder : CARDS.map((c) => c.id);
   const total = order.length;
   const done = order.filter((id) => isCardComplete(session, id)).length;
   return (
     <div className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-3 text-xs">
-        <div className="font-mono text-ink-500">
-          {session.reviewer?.name ?? "Anonymous"}
-          {session.reviewer?.institution ? ` · ${session.reviewer.institution}` : ""}
+        <div className="flex items-center gap-2 font-mono text-ink-500">
+          <span>
+            {session.reviewer?.name ?? "Anonymous"}
+            {session.reviewer?.institution ? ` · ${session.reviewer.institution}` : ""}
+          </span>
+          {cloudSync && <SyncBadge status={cloudSync} />}
         </div>
         <div className="flex items-center gap-3">
           <div className="text-ink-500">
